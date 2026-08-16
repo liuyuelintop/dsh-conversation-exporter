@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DSH Conversation Exporter — local download mechanism demo</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 720px; margin: 40px auto; padding: 0 16px; line-height: 1.5; }
+  textarea { width: 100%; min-height: 300px; font-family: ui-monospace, monospace; font-size: 13px; }
+  button { padding: 10px 18px; font-size: 15px; cursor: pointer; }
+  code { background: #f2f2f2; padding: 1px 4px; border-radius: 4px; }
+  #log { color: #555; }
+</style>
+</head>
+<body>
+<h1>Local download mechanism (standalone demo)</h1>
+<p>
+  This page proves the <strong>browser-side</strong> half of the exporter path: take Markdown
+  text produced by the pipeline, wrap it in a <code>Blob</code>, create an object URL, click a
+  temporary <code>&lt;a download&gt;</code>, then revoke the URL. No server, no upload, nothing
+  leaves this machine.
+</p>
+<p>
+  A DSH Web plugin would do exactly this inside the slot
+  <code>conversation.session.header.utilities</code> (the same seat as the official
+  &ldquo;Session log&rdquo; button). In-page activation requires plugin approval, which is
+  disabled in the unattended spike session — hence this standalone proof.
+</p>
+<textarea id="md">## Human
+
+请把这段内容整理成 Markdown：你好，世界！😀
+
+## Assistant
+
+好的，整理如下：
+
+```python
+print("你好，世界")
+```
+
+- 第一点
+- 第二点
+</textarea>
+<p><button id="dl" type="button">Download conversation.md</button></p>
+<pre id="log"></pre>
+<script>
+function downloadMarkdown(text, filename) {
+  const blob = new Blob([text], { type: 'text/markdown;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+document.getElementById('dl').addEventListener('click', () => {
+  const text = document.getElementById('md').value;
+  downloadMarkdown(text, 'conversation.md');
+  document.getElementById('log').textContent =
+    'download triggered: conversation.md (' + new Blob([text]).size + ' bytes)';
+});
+</script>
+</body>
+</html>

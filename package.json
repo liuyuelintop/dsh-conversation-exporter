@@ -1,0 +1,16 @@
+{
+  "name": "dsh-conversation-exporter",
+  "version": "0.1.0-stage0",
+  "private": true,
+  "type": "module",
+  "description": "Clean, human-readable Markdown export for DeepSeek Harness Web conversations. Stage 0 spike.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "check": "node scripts/check-syntax.js",
+    "cli": "node src/cli.js",
+    "demo": "node -e \"console.log('Open demo/download-demo.html in a browser, or serve it with: python3 -m http.server --directory demo 8080')\""
+  }
+}
