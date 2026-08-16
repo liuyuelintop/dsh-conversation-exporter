@@ -1,16 +1,41 @@
 {
   "name": "dsh-conversation-exporter",
-  "version": "0.1.0-stage0",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "license": "MIT",
-  "description": "Clean, human-readable Markdown export for DeepSeek Harness Web conversations. Stage 0 spike.",
+  "description": "Local clean-Markdown export for the current DeepSeek Harness Web conversation.",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./client": "./lib/client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "cordis.patch.yml",
+    "lib/client.js",
+    "src/**/*.js"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-ui-conversation"
+      ],
+      "platform": "web"
+    }
+  },
   "engines": {
     "node": ">=20"
   },
   "scripts": {
     "test": "node --test test/*.test.js",
     "check": "node scripts/check-syntax.js",
+    "verify": "npm test && npm run check && npm pack --dry-run",
     "cli": "node src/cli.js",
     "demo": "node -e \"console.log('Open demo/download-demo.html in a browser, or serve it with: python3 -m http.server --directory demo 8080')\""
   }

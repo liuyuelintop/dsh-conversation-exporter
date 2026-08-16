@@ -1,6 +1,6 @@
 # Acceptance — DSH Conversation Exporter
 
-> **STATUS: DRAFT — NOT HUMAN ACCEPTED**
+> **STATUS: V0.1 CANDIDATE AWAITING EXACT-SHA ACCEPTANCE**
 
 ## Core invariant
 
@@ -34,19 +34,38 @@ Structural acceptance (always on):
 - The Markdown has no provenance/session-metadata header (locked default; golden files
   assert the exact document shape).
 
+Production integration acceptance (always on):
+
+- Package declares one DSH bundle patch and one Web client entry; installing the bundle
+  composes one `conversation-exporter` row without editing DSH or global configuration.
+- Host injects `sessionQuery`, `webServer`, and `webRuntime`; the export route calls
+  `sessionQuery.readSession(sessionId)` and feeds its detached events directly to the
+  accepted `extract → render` core (no JSONL production hop).
+- The plugin-owned route mirrors DSH's Host/Origin trust fence, accepts JSON POST only,
+  bounds the request body, returns `no-store` Markdown, and does not leak operational
+  failure details to the browser.
+- Client registers one additive **Export Chat** contribution in
+  `conversation.session.header.utilities`; it does not replace or intercept **Session log**.
+- Client posts only the current framework-supplied `sessionId`, creates a Markdown Blob,
+  downloads the locked filename, and revokes the object URL.
+- Production tests re-run the accepted normal, image-only, and incomplete-turn behavior
+  against a `readSession`-shaped snapshot.
+
 ## Verification commands
 
 ```bash
-npm test                    # A–G + structural cases: node --test test/
+npm test                    # A–H + production + structural cases: node --test test/
 npm run check               # syntax-check every JS file (node --check)
+npm pack --dry-run          # installable artifact contains host, client, and bundle patch
 node src/cli.js test/fixtures/a-normal-chat.jsonl   # smoke: CLI round-trip
 ```
 
-Integration check (run in the Stage 0 session; privacy-preserving, never committed):
+Optional isolated live check (privacy-preserving, disposable DSH home):
 
 ```bash
-node src/cli.js <real session.jsonl.zstd> /tmp/out.md        # owner's own artifact
-node src/cli.js <runtime-read session.jsonl> /tmp/out2.md     # via dynamic host plugin + sessionQuery
+DSH_V01_HOME="$(mktemp -d)"
+DSH_HOME="$DSH_V01_HOME" dsh plugin --profile web add .
+DSH_HOME="$DSH_V01_HOME" dsh web
 ```
 
 ## Exact-SHA acceptance

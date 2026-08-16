@@ -1,5 +1,5 @@
 /**
- * Acceptance cases A–G (see docs/ACCEPTANCE.md).
+ * Acceptance cases A–H (see docs/ACCEPTANCE.md).
  * Exact golden comparison plus per-case forbidden-content and stats assertions.
  */
 

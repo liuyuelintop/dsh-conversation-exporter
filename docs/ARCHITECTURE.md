@@ -1,10 +1,10 @@
 # Architecture — DSH Conversation Exporter
 
-> **STATUS: DRAFT — NOT HUMAN ACCEPTED**
+> **STATUS: GATE A BASELINE ACCEPTED; V0.1 CANDIDATE AWAITING ACCEPTANCE**
 
-This document contains only findings **verified** against the installed DSH runtime/source
-during the Stage 0 spike, plus the spike's own design. Claims without evidence live in the
-"Open questions" section, not here.
+This document contains findings **verified** against installed/current DSH runtime source,
+the Stage 0 spike, and the isolated V0.1 integration check. Claims without evidence live
+in the "Open questions" section, not here.
 
 ## Evidence base
 
@@ -173,6 +173,28 @@ slot/event wiring is proven from installed source (F6/F9), but the end-to-end in
 button remains unproven in this session. This is the spike's documented blocker, not a
 faked success.
 
+### F15 — V0.1 revalidation against current DSH APIs
+
+Before V0.1 implementation, the production seams were rechecked against installed
+`@deepseek-ai/dsh@0.1.0-rc.6` and official DeepSeek Harness `master` at
+`47f943859bef60e4160492346772ded9b24f765a` (2026-08-17). Both expose the same contracts
+used here: `sessionQuery.readSession(id)`, `webServer.register({kind:'exact', ...})`,
+`webRuntime.trustedHosts`, `dsh.client` discovery through the `./client` export, and the
+additive `conversation.session.header.utilities` slot with a framework-supplied
+`sessionId`. The plugin mirrors DSH Web's Host/Origin trust fence on its exact `/api`
+route because an exact route is owned by this plugin rather than the ApiProxy prefix.
+
+### F16 — V0.1 isolated live integration
+
+The repository installed successfully as a bundle into a disposable DSH home and composed
+one `conversation-exporter` row after the shipped Web bundle. In the live Web page, a real
+session rendered **Export Chat** immediately beside the unchanged **Session log** action.
+The plugin route read that current session through `sessionQuery` and returned exactly the
+human message plus `> Response incomplete.` after the deliberately credential-blocked turn.
+The browser automation backend did not surface a download event for the Blob/anchor click;
+the shipped client artifact's fetch, Blob, filename, click, revoke, and failure paths are
+therefore also covered directly by deterministic integration tests.
+
 ## Stage 0 spike architecture — TEST/DEBUG path only
 
 The JSONL artifact and the CLI below are the **test/debug harness**. They
@@ -212,16 +234,29 @@ Deterministic rules (documented here and enforced by tests):
 4. `cwd`, paths, `usage`, ids, and header metadata never reach the output by construction;
    the Markdown has no provenance/session-metadata header (locked default).
 
-## V0.1 production direction (locked; implementation NOT started)
+## V0.1 production architecture
 
-Production path: Host `sessionQuery.readSession(sessionId)` → `extract` → `render`
-→ **browser download** (client Blob/anchor or host-served route, F10), triggered from
-`conversation.session.header.utilities` (F6/F9). The JSONL artifact/CLI remain a
-test/debug path and are not part of the production architecture. The in-page trigger
-still needs live verification in an approval-enabled session before any claim
-(unverified per F14).
+```text
+conversation.session.header.utilities (current sessionId)
+      │  POST /api/conversation.export (same-origin JSON request)
+      ▼
+Host trust boundary (DSH Host/Origin rules + bounded request body)
+      │  sessionQuery.readSession(sessionId)
+      ▼
+detached validated SessionLogSnapshot.events
+      │  extractConversation → renderConversation
+      ▼
+text/markdown response (no-store, nosniff)
+      │  Blob → object URL → hidden anchor click → revoke
+      ▼
+dsh-conversation-<sanitized-session-id>.md
+```
+
+The host performs all conversation processing locally. The browser receives only the
+finished Markdown over the same DSH origin. The JSONL artifact/CLI remain test/debug
+infrastructure and are not used by the production route. The official `/api/session.export`
+and its **Session log** action are not replaced, patched, or intercepted.
 
 ## Open questions
 
-1. Host-RPC return vs. host-served route for large conversations (official precedent: F6).
-2. Markdown flavor pinning (raw text is pass-through; no sanitization beyond block filter).
+1. Markdown flavor pinning (raw text is pass-through; no sanitization beyond block filter).

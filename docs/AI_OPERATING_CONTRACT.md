@@ -1,6 +1,6 @@
 # AI Operating Contract — DSH Conversation Exporter
 
-> **STATUS: DRAFT — NOT HUMAN ACCEPTED**
+> **STATUS: ACTIVE**
 
 Repo-specific rules for AI work on this repository. General cross-project Harness
 governance is not duplicated here; it still applies.

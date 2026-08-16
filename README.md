@@ -1,6 +1,6 @@
 # DSH Conversation Exporter
 
-> **STATUS: DRAFT — NOT HUMAN ACCEPTED** (Stage 0 architecture spike)
+> **STATUS: V0.1 IMPLEMENTATION CANDIDATE — AWAITING EXACT-SHA ACCEPTANCE**
 
 Export the current [DeepSeek Harness Web](http://127.0.0.1:3080) conversation into a clean,
 human-readable Markdown file — for reading, storing in Git/notes, and attaching to
@@ -9,32 +9,27 @@ ChatGPT / Codex / Claude.
 This project **does not replace** DSH's official raw Session ZIP export
 (lossless/raw/debug/replay). This project is the clean/human-readable/AI-handoff layer.
 
-## What exists right now (Stage 0)
+## What exists now
 
-A dependency-free Node.js spike that proves the core vertical path:
+A dependency-free DSH Web plugin with the production path:
 
 ```
-DSH session log (official raw artifact, JSONL)
-  → identify human turns (source.kind === "user")
-  → identify final assistant response per turn
-  → clean canonical conversation (Human / Assistant only)
-  → Markdown
-  → file on disk (+ browser download mechanism demo)
+current Session header action
+  → sessionQuery.readSession(sessionId)
+  → extract human messages + final assistant responses
+  → render clean Markdown
+  → same-origin response
+  → browser Blob download
 ```
 
-- `src/` — pure extraction + Markdown rendering pipeline, plus a CLI.
-- `test/` — deterministic regression tests (cases A–G) with sanitized fixtures and golden files.
-- `demo/download-demo.html` — standalone proof of the browser-side local download mechanism.
-- `docs/` — control plane: PRODUCT, ARCHITECTURE, ACCEPTANCE, AI_OPERATING_CONTRACT.
+- `src/plugin.js` — native DSH host route over `sessionQuery` and `webServer`.
+- `lib/client.js` — native additive `conversation.session.header.utilities` action.
+- `src/lib/` — accepted extraction/rendering core and production boundary.
+- `test/` — sanitized golden cases plus deterministic host/client integration tests.
+- `src/cli.js` — JSONL test/debug entry point only.
 
-Runtime integration was also proven in the Stage 0 session: a host-only dynamic plugin
-read the live session through the runtime `sessionQuery` service and fed this CLI
-end-to-end (ephemeral, session-owned experiment; findings recorded in
-`docs/ARCHITECTURE.md` F12–F14).
-
-The JSONL artifact + CLI above is the **test/debug path**. The locked V0.1 production
-architecture is `sessionQuery.readSession → extract → render → browser download`
-(`docs/ARCHITECTURE.md`). V0.1 implementation has **not** started.
+The official **Session log** ZIP export stays present and unchanged. This plugin adds
+**Export Chat** beside it for the current session only.
 
 ## Locked product defaults
 
@@ -44,11 +39,22 @@ architecture is `sessionQuery.readSession → extract → render → browser dow
 - Unanswered turns: neutral marker `> Response incomplete.` (no synthesized Assistant section)
 - Image-only human messages: `[Image omitted]` placeholder
 
-## Quick start
+## Install into DSH Web
+
+From this checkout:
 
 ```bash
-npm test                 # deterministic regression tests (node --test, zero deps)
-npm run check            # syntax check every JS file
+dsh plugin --profile web add .
+dsh web
+```
+
+Open a conversation and click **Export Chat**. The browser downloads
+`dsh-conversation-<session-id>.md`.
+
+## Verify and debug
+
+```bash
+npm run verify           # tests, syntax checks, package dry-run
 node src/cli.js test/fixtures/a-normal-chat.jsonl
 ```
 
@@ -63,10 +69,10 @@ node src/cli.js /path/to/session.jsonl.zstd conversation.md
 | Path | Purpose |
 |---|---|
 | `docs/PRODUCT.md` | Problem, target user, V0.1 outcome, non-goals |
-| `docs/ARCHITECTURE.md` | Verified DSH runtime findings + spike design |
+| `docs/ARCHITECTURE.md` | Verified DSH runtime findings + production design |
 | `docs/ACCEPTANCE.md` | Machine-testable acceptance criteria |
 | `docs/AI_OPERATING_CONTRACT.md` | Autonomy limits for AI workers |
-| `src/` | Spike pipeline + CLI (dependency-free) |
+| `src/`, `lib/client.js` | Production plugin, accepted core, and debug CLI |
 | `test/fixtures/`, `test/golden/` | Sanitized fixtures and exact expected outputs |
 
 ## Privacy

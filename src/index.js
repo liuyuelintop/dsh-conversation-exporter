@@ -14,16 +14,9 @@ import { extractConversation } from './lib/extract.js';
 import { renderConversation } from './lib/render.js';
 
 export { SessionFormatError } from './lib/sessionlog.js';
-
-/**
- * Locked download filename convention (mirrors the official export's
- * path-segment sanitization): `dsh-conversation-<session-id>.md`.
- * @param {unknown} sessionId
- * @returns {string}
- */
-export function markdownFilename(sessionId) {
-  return `dsh-conversation-${String(sessionId).replace(/[^A-Za-z0-9_-]/g, '_')}.md`;
-}
+export { markdownFilename } from './lib/filename.js';
+export { exportSessionSnapshot } from './lib/production.js';
+export { apply, inject, name } from './plugin.js';
 
 export function exportConversation(logText) {
   const { header, events, stats: parseStats } = parseSessionLog(logText);

@@ -1,6 +1,6 @@
 # Product — DSH Conversation Exporter
 
-> **STATUS: DRAFT — NOT HUMAN ACCEPTED**
+> **STATUS: GATE A BASELINE ACCEPTED; V0.1 CANDIDATE AWAITING ACCEPTANCE**
 
 ## Problem
 
@@ -65,7 +65,8 @@ product surface.
 5. **Image-only human messages:** render as a Human section with the neutral placeholder
    `[Image omitted]` — a human turn never silently becomes Assistant-only.
 
-## Open questions for the human owner
+## V0.1 implementation decision
 
-1. Browser download transport for V0.1: host-RPC return vs. host-served route
-   (see `docs/ARCHITECTURE.md` Open questions).
+V0.1 uses a same-origin host-served Markdown response followed by a browser Blob download.
+This follows DSH's host-streamed Session Log precedent while keeping the clean export as a
+separate additive action and avoiding JSON/RPC encoding overhead for large conversations.
