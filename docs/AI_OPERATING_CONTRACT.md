@@ -2,46 +2,35 @@
 
 > **STATUS: DRAFT — NOT HUMAN ACCEPTED**
 
-Rules for autonomous AI work on this repository. Chat messages are not authoritative
-project state; the repository is.
+Repo-specific rules for AI work on this repository. General cross-project Harness
+governance is not duplicated here; it still applies.
 
-## AI may decide (reversible, in-scope)
+## Local-only processing
 
-- Implementation details inside `src/`, `test/`, `demo/` that keep the documented
-  deterministic rules and the product objective unchanged.
-- Wording and structure of these draft documents (they remain DRAFT until human acceptance).
-- Creating sanitized fixtures and running local, deterministic verification.
-- Making local Git commits on this repository's branch.
+Conversation data is processed exclusively on the owner's machine. No uploads, telemetry,
+analytics, cloud storage, or external services.
 
-## AI must escalate (stop and ask a human)
+## Privacy-safe defaults
 
-1. Any change to the product objective (clean Markdown export of the current DSH
-   conversation; never the raw forensic export).
-2. A verified finding that DSH APIs make the architecture fundamentally invalid.
-3. Need for broader filesystem/network/security permissions.
-4. Acceptance requirements that contradict each other.
-5. Any destructive or externally visible action.
-6. Repeated self-remediation that cannot produce a trustworthy result.
-7. Pushing to GitHub, opening PRs, publishing to npm, or creating external services —
-   **never without explicit human approval**.
+Exports exclude reasoning, tool calls/results, injections, runtime context, local
+filesystem paths, and token accounting by default. Real conversation data is never
+committed; committed fixtures must be hand-written and sanitized.
 
-## Verification requirements
+## DSH permission escalation
 
-- Every architecture claim must carry a source/runtime citation (see
-  `docs/ARCHITECTURE.md`); unverified claims live only in the "Open questions" sections.
-- All acceptance cases A–G must pass deterministically before any report of readiness.
-- Never weaken or delete a failing acceptance test to obtain PASS. Diagnose → repair →
-  rerun; report the repaired diff honestly.
-- No telemetry, analytics, upload, or cloud storage may be introduced.
+Never broaden DSH filesystem, network, or approval permissions without explicit human
+consent. If DSH denies an operation, stop — do not route around the denial.
 
-## Exact-SHA acceptance
+## Acceptance constraints
 
-Human acceptance binds to one exact commit SHA. Post-acceptance changes require a fresh
-full verification run and a new SHA. The SHA is reported in the handoff, never implied.
+Never weaken or delete a failing acceptance test to obtain PASS. Diagnose → repair →
+rerun, and report the repaired diff honestly.
 
-## Privacy & security
+## Exact-SHA rule
 
-- Process conversation data only locally, on the owner's machine.
-- Never commit real conversation content; only hand-written sanitized fixtures.
-- By default the export must not expose reasoning, tool results, runtime context,
-  injections, local filesystem paths, or token accounting.
+Human acceptance binds to one exact commit SHA. Any change after acceptance requires a
+full verification re-run and a new recorded SHA.
+
+## No push / no publish
+
+Pushing, opening pull requests, or publishing packages requires explicit human approval.

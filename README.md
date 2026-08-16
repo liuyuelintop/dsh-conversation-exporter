@@ -32,6 +32,18 @@ read the live session through the runtime `sessionQuery` service and fed this CL
 end-to-end (ephemeral, session-owned experiment; findings recorded in
 `docs/ARCHITECTURE.md` F12–F14).
 
+The JSONL artifact + CLI above is the **test/debug path**. The locked V0.1 production
+architecture is `sessionQuery.readSession → extract → render → browser download`
+(`docs/ARCHITECTURE.md`). V0.1 implementation has **not** started.
+
+## Locked product defaults
+
+- License: **MIT** (`LICENSE`)
+- Download filename: `dsh-conversation-<session-id>.md`
+- No provenance/session-metadata header in the Markdown
+- Unanswered turns: neutral marker `> Response incomplete.` (no synthesized Assistant section)
+- Image-only human messages: `[Image omitted]` placeholder
+
 ## Quick start
 
 ```bash
@@ -64,4 +76,4 @@ commits real conversation data — only hand-written, sanitized fixtures.
 
 ## License
 
-Not decided yet (pending human acceptance; see `docs/PRODUCT.md`).
+MIT (locked default — see `LICENSE`).

@@ -2,14 +2,10 @@
 
 Start a long task.
 
-## Assistant
-
-> *(no final response — turn aborted)*
+> Response incomplete.
 
 ## Human
 
 Another question.
 
-## Assistant
-
-> *(no final response — turn incomplete)*
+> Response incomplete.

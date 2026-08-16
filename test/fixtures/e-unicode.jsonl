@@ -1,0 +1,7 @@
+{"type":"session","version":0,"id":"session-test-e","createdAt":1,"delegationDepth":0,"agentPreset":"standard"}
+{"type":"turn/start","seq":0,"time":1,"data":{"turn":1}}
+{"type":"user/message","seq":1,"time":2,"data":{"id":"u1","role":"user","content":[{"type":"text","text":"你好！请把这段内容整理成 Markdown：\n\n- 第一点\n- 第二点 😀\n\n中英文混合 English mixed。"}],"source":{"kind":"user"}},"surfaceOp":"append"}
+{"type":"step/start","seq":2,"time":3,"data":{"turn":1,"step":1}}
+{"type":"assistant/message","seq":3,"time":4,"data":{"turn":1,"step":1,"message":{"id":"a1","role":"assistant","content":[{"type":"text","text":"好的，整理如下：\n\n```\n中文代码块\n```\n\n再见！"}],"source":{"kind":"model","provider":"deepseek","model":"deepseek-chat"}}},"surfaceOp":"append"}
+{"type":"step/end","seq":4,"time":5,"data":{"turn":1,"step":1}}
+{"type":"turn/end","seq":5,"time":6,"data":{"turn":1,"reason":{"kind":"completed"}}}

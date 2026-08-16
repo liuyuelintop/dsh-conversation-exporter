@@ -103,5 +103,6 @@ test('a whitespace-only assistant message is not a final response', () => {
   const { events } = parseSessionLog(text);
   const { entries } = extractConversation(events);
   const markdown = renderConversation(entries);
-  assert.ok(markdown.includes('no final response — turn ended'));
+  assert.ok(markdown.includes('> Response incomplete.'));
+  assert.ok(!markdown.includes('## Assistant'));
 });

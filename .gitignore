@@ -2,7 +2,9 @@ node_modules/
 tmp/
 *.zstd
 *.jsonl
+!test/fixtures/*.jsonl
 *.md.bak
 .DS_Store
 # Never commit real session artifacts or exports of real conversations.
-# All committed fixtures must be hand-written and sanitized (test/fixtures/).
+# All committed fixtures must be hand-written and sanitized (test/fixtures/,
+# explicitly re-included above).

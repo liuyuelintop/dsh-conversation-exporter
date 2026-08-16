@@ -10,10 +10,16 @@
  *     `assistant/message` in its bracket with non-empty visible text.
  *     Intermediate steps never render.
  *  3. Only `text` content blocks render, verbatim. `reasoning`, `tool-call`,
- *     `tool-result`, and `image` blocks are skipped and counted.
- *  4. Replacement-origin surface events (compaction) are model-only shadowing
+ *     `tool-result`, and `image` blocks are skipped and counted. A human
+ *     message with no visible text (e.g. image-only) renders the neutral
+ *     placeholder `[Image omitted]` so the turn never silently becomes
+ *     Assistant-only.
+ *  4. A turn without a final assistant response renders NO assistant section;
+ *     the renderer appends the neutral marker `> Response incomplete.`
+ *     after the human message instead.
+ *  5. Replacement-origin surface events (compaction) are model-only shadowing
  *     and are skipped; append-origin events are the durable transcript source.
- *  5. Unknown non-surface event types are log-only and skipped; an unknown type
+ *  6. Unknown non-surface event types are log-only and skipped; an unknown type
  *     claiming surface membership fails loud (we would otherwise silently drop
  *     a message we cannot interpret).
  */
@@ -37,6 +43,9 @@ function isRecord(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
+/** Neutral placeholder for a human message with no visible text (e.g. image-only). */
+const IMAGE_OMITTED_PLACEHOLDER = '[Image omitted]';
+
 /** Join the visible text blocks of a message's content, counting skipped blocks. */
 function textOf(content, stats) {
   if (!Array.isArray(content)) return '';
@@ -55,17 +64,6 @@ function textOf(content, stats) {
     else stats.unknownBlocks++;
   }
   return parts.join('\n\n');
-}
-
-function markerFor(turn) {
-  const kind = turn.endReason?.kind;
-  if (kind === 'aborted') return 'no final response — turn aborted';
-  if (kind === 'interrupted') return 'no final response — turn interrupted';
-  if (kind === 'error') return 'no final response — turn errored';
-  if (kind === 'max-tokens') return 'no final response — turn hit output limit';
-  if (kind === 'blocked') return 'no final response — turn blocked';
-  if (kind !== undefined) return 'no final response — turn ended';
-  return 'no final response — turn incomplete';
 }
 
 /**
@@ -139,10 +137,8 @@ export function extractConversation(events) {
         if (isRecord(message?.source) && message.source.kind === 'user') {
           current.humanCount++;
           const text = textOf(message.content, stats);
-          if (text !== '') {
-            current.humans.push(text);
-            stats.humanMessages++;
-          }
+          current.humans.push(text !== '' ? text : IMAGE_OMITTED_PLACEHOLDER);
+          stats.humanMessages++;
         } else {
           stats.injectedUserMessages++;
         }
@@ -161,7 +157,7 @@ export function extractConversation(events) {
   }
 
   // An open tail turn (EOF before its turn/end) is legal: live sessions look
-  // exactly like this. It renders with the documented incomplete marker.
+  // exactly like this. It renders with the neutral incomplete marker.
   const entries = [];
   for (const turn of turns) {
     if (turn.humanCount === 0) continue; // injection-only turns are not conversation
@@ -171,7 +167,7 @@ export function extractConversation(events) {
       entry.assistant = turn.assistants[turn.assistants.length - 1].text;
       stats.finalAssistants++;
     } else {
-      entry.marker = markerFor(turn);
+      entry.assistant = null; // no synthesized assistant response; renderer adds the marker
     }
     entries.push(entry);
   }

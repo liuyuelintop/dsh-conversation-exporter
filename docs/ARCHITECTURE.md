@@ -173,22 +173,27 @@ slot/event wiring is proven from installed source (F6/F9), but the end-to-end in
 button remains unproven in this session. This is the spike's documented blocker, not a
 faked success.
 
-## Stage 0 spike architecture
+## Stage 0 spike architecture — TEST/DEBUG path only
+
+The JSONL artifact and the CLI below are the **test/debug harness**. They
+exercise the exact `extract → render` core the production path uses, with a
+file standing in for the runtime read. The production architecture is the
+read path in the next section, not this file pipeline.
 
 ```
-session.jsonl[.zstd]            (official durable artifact, F7)
+session.jsonl[.zstd]            (official durable artifact, F7 — debug input)
       │  parseSessionLog        (header gate; chunk-row skip; seq-contiguity check)
       ▼
 raw events (in-order)
       │  extractConversation    (turn brackets F3; source.kind==='user' F2;
       ▼                          append-origin only F4; text blocks only F5)
-turns: {human messages, final assistant text | marker}
+turns: {human messages, final assistant text | null}
       │  renderConversation
       ▼
 Markdown (## Human / ## Assistant, verbatim text)
       │  CLI write-to-file      (or browser Blob → anchor download, F10)
       ▼
-conversation.md
+dsh-conversation-<session-id>.md   (locked filename)
 ```
 
 Deterministic rules (documented here and enforced by tests):
@@ -197,21 +202,26 @@ Deterministic rules (documented here and enforced by tests):
    `source.kind === 'user'`; other turns (injection-only, goal rounds) are excluded whole.
 2. The **final assistant response** of a turn is the last append-origin `assistant/message`
    inside its bracket whose content has non-empty visible text; intermediate steps never
-   render. A turn without one renders an italic marker (aborted / interrupted / incomplete).
+   render. A turn without one renders **no** assistant section — the human message stands,
+   followed by the neutral marker `> Response incomplete.` (never a synthesized response).
 3. Only `text` blocks render, verbatim (paragraphs, fences, CJK preserved). `reasoning`,
    `tool-call`, `tool-result`, `image` blocks and all non-surface events are skipped and
-   counted in stats.
-4. `cwd`, paths, `usage`, ids, and header metadata never reach the output by construction.
+   counted in stats. A human message with no visible text (e.g. image-only) renders the
+   neutral placeholder `[Image omitted]` — a human turn never silently becomes
+   Assistant-only.
+4. `cwd`, paths, `usage`, ids, and header metadata never reach the output by construction;
+   the Markdown has no provenance/session-metadata header (locked default).
 
-## V0.1 direction (unverified sketch — pending spike #2)
+## V0.1 production direction (locked; implementation NOT started)
 
-DSH Web plugin: Host half (`harness.handle('export-md')` → `sessionQuery.readSession` →
-this pipeline → markdown string), Client half (button in
-`conversation.session.header.utilities` → `host.call` → Blob/anchor download). Needs live
-verification in an approval-enabled session before any claim.
+Production path: Host `sessionQuery.readSession(sessionId)` → `extract` → `render`
+→ **browser download** (client Blob/anchor or host-served route, F10), triggered from
+`conversation.session.header.utilities` (F6/F9). The JSONL artifact/CLI remain a
+test/debug path and are not part of the production architecture. The in-page trigger
+still needs live verification in an approval-enabled session before any claim
+(unverified per F14).
 
 ## Open questions
 
 1. Host-RPC return vs. host-served route for large conversations (official precedent: F6).
 2. Markdown flavor pinning (raw text is pass-through; no sanitization beyond block filter).
-3. Image handling policy (V0.1 default: skip + count; alternatives: link, embed).

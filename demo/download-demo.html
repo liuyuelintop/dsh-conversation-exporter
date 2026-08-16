@@ -41,9 +41,12 @@ print("你好，世界")
 - 第一点
 - 第二点
 </textarea>
-<p><button id="dl" type="button">Download conversation.md</button></p>
+<p><button id="dl" type="button">Download dsh-conversation-demo-session.md</button></p>
 <pre id="log"></pre>
 <script>
+// Locked convention: dsh-conversation-<session-id>.md
+const DEMO_FILENAME = 'dsh-conversation-demo-session.md';
+
 function downloadMarkdown(text, filename) {
   const blob = new Blob([text], { type: 'text/markdown;charset=utf-8' });
   const url = URL.createObjectURL(blob);
@@ -58,9 +61,9 @@ function downloadMarkdown(text, filename) {
 
 document.getElementById('dl').addEventListener('click', () => {
   const text = document.getElementById('md').value;
-  downloadMarkdown(text, 'conversation.md');
+  downloadMarkdown(text, DEMO_FILENAME);
   document.getElementById('log').textContent =
-    'download triggered: conversation.md (' + new Blob([text]).size + ' bytes)';
+    'download triggered: ' + DEMO_FILENAME + ' (' + new Blob([text]).size + ' bytes)';
 });
 </script>
 </body>

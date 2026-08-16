@@ -49,14 +49,23 @@ paths, token accounting, or streaming noise).
 | Format | ZIP of JSONL artifacts + media | one Markdown file |
 | Audience | debugging, recovery, forensics | humans, other AI assistants, Git/notes |
 
-The exporter consumes the same session-log data the official export ships
-(`session.jsonl`), so the two stay compatible without sharing code or product surface.
+The exporter consumes the same session-log event data the official export ships
+(`session.jsonl`): in production via the runtime `sessionQuery.readSession` service, and in
+the test/debug CLI via the JSONL artifact. The two stay compatible without sharing code or
+product surface.
+
+## Locked product defaults (Gate A)
+
+1. **License:** MIT.
+2. **Filename:** `dsh-conversation-<session-id>.md` (session id sanitized to `[A-Za-z0-9_-]`).
+3. **No provenance header:** clean Markdown starts directly with the first `## Human`
+   section — no session metadata, ids, dates, or paths.
+4. **Unanswered turns:** the human message renders normally; no Assistant section is
+   synthesized. The neutral marker `> Response incomplete.` follows the human message.
+5. **Image-only human messages:** render as a Human section with the neutral placeholder
+   `[Image omitted]` — a human turn never silently becomes Assistant-only.
 
 ## Open questions for the human owner
 
-1. Default file name convention (e.g. `conversation-<session-id>.md`)?
-2. Include a one-line provenance comment (session id / date) at the top of the file?
-   (Stage 0 default: no — output is Human/Assistant sections only.)
-3. License choice for the open-source repository.
-4. Whether unanswered (aborted/incomplete) turns should render a marker line or be omitted.
-   (Stage 0 default: marker line.)
+1. Browser download transport for V0.1: host-RPC return vs. host-served route
+   (see `docs/ARCHITECTURE.md` Open questions).

@@ -5,7 +5,7 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { exportConversation } from '../src/index.js';
+import { exportConversation, markdownFilename } from '../src/index.js';
 import { fixture, golden } from './helpers.js';
 
 const cases = [
@@ -64,7 +64,7 @@ const cases = [
     name: 'F — interrupted (aborted) and incomplete (open at EOF) turns',
     fixture: 'f-interrupted.jsonl',
     golden: 'f-interrupted.md',
-    forbidden: [],
+    forbidden: ['## Assistant'],
     stats: { turns: 2, humanTurns: 2, humanMessages: 2, finalAssistants: 0 },
   },
   {
@@ -81,6 +81,13 @@ const cases = [
       unknownEvents: 2,
     },
   },
+  {
+    name: 'H — image-only human turn keeps a Human section',
+    fixture: 'h-image-only.jsonl',
+    golden: 'h-image-only.md',
+    forbidden: ['img-only-1'],
+    stats: { humanTurns: 1, humanMessages: 1, finalAssistants: 1, imageBlocks: 1 },
+  },
 ];
 
 for (const c of cases) {
@@ -95,3 +102,11 @@ for (const c of cases) {
     }
   });
 }
+
+test('locked download filename convention', () => {
+  assert.equal(
+    markdownFilename('session-13040a78-d192-4aec-992c-723f9bae3edc'),
+    'dsh-conversation-session-13040a78-d192-4aec-992c-723f9bae3edc.md',
+  );
+  assert.equal(markdownFilename('a/b c'), 'dsh-conversation-a_b_c.md');
+});
