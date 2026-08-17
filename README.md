@@ -5,6 +5,16 @@ Web. It downloads the current conversation as a clean Markdown file containing t
 human-authored messages and final assistant answers, ready for reading, notes, Git, or
 handoff to another AI assistant.
 
+## Demo
+
+### Export directly from DSH Web
+
+![Export Chat in DeepSeek Harness](assets/dsh-export-chat.png)
+
+### Clean Markdown output
+
+![Exported DSH conversation as Markdown](assets/markdown-export-preview.png)
+
 ## Export Chat vs. Session Log
 
 **Export Chat** is an additive action; it does not replace or modify DSH's official
