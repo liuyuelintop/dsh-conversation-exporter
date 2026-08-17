@@ -1,15 +1,25 @@
-## Human
+# DSH Conversation
+
+---
+
+> **Human**
 
 Hello, what is 2+2?
 
-## Assistant
+---
+
+> **Assistant**
 
 2 + 2 is **4**.
 
-## Human
+---
+
+> **Human**
 
 What about 3+3?
 
-## Assistant
+---
+
+> **Assistant**
 
 3 + 3 is 6.

@@ -1,7 +1,7 @@
 /**
  * Public pipeline entry point.
  *
- *   exportConversation(logText) -> { markdown, header, stats }
+ *   exportConversation(logText) -> { sessionId, title, entries, markdown, header, stats }
  *
  * logText is the official DSH session-log JSONL artifact text (decompress
  * `.jsonl.zstd` first; the CLI does this transparently). The JSONL/CLI path is
@@ -20,7 +20,14 @@ export { apply, inject, name } from './plugin.js';
 
 export function exportConversation(logText) {
   const { header, events, stats: parseStats } = parseSessionLog(logText);
-  const { entries, stats: extractStats } = extractConversation(events);
-  const markdown = renderConversation(entries);
-  return { markdown, header, stats: { ...parseStats, ...extractStats } };
+  const { title, entries, stats: extractStats } = extractConversation(events);
+  const markdown = renderConversation(entries, title);
+  return {
+    sessionId: String(header.id),
+    title,
+    entries,
+    markdown,
+    header,
+    stats: { ...parseStats, ...extractStats },
+  };
 }

@@ -22,6 +22,8 @@
  *  6. Unknown non-surface event types are log-only and skipped; an unknown type
  *     claiming surface membership fails loud (we would otherwise silently drop
  *     a message we cannot interpret).
+ *  7. The latest usable log-only `session/title` wins. This mirrors DSH's
+ *     `foldSessionTitle()` semantics without invoking a title provider.
  */
 
 import { SessionFormatError } from './sessionlog.js';
@@ -38,6 +40,8 @@ const KNOWN_LOG_ONLY_TYPES = new Set([
   'request/context',
   'session/end-seed',
 ]);
+
+const UNSAFE_TITLE_CHARACTER = /[\u0000-\u001F\u007F-\u009F\u200B\u200E\u200F\u202A-\u202E\u2060-\u2064\u2066-\u206F\uFEFF]/u;
 
 function isRecord(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -68,7 +72,7 @@ function textOf(content, stats) {
 
 /**
  * @param {object[]} events - raw session events in seq order.
- * @returns {{entries: object[], stats: object}}
+ * @returns {{title: string|null, entries: object[], stats: object}}
  * @throws {SessionFormatError} on structurally unsafe logs.
  */
 export function extractConversation(events) {
@@ -91,9 +95,18 @@ export function extractConversation(events) {
 
   const turns = [];
   let current = null;
+  let title = null;
 
   for (const event of events) {
     const type = event.type;
+
+    if (type === 'session/title') {
+      const candidate = event.data?.title;
+      if (typeof candidate === 'string' && candidate.trim() !== '' && !UNSAFE_TITLE_CHARACTER.test(candidate)) {
+        title = candidate.trim();
+      }
+      continue;
+    }
 
     if (type === 'turn/start') {
       if (current !== null) {
@@ -172,5 +185,5 @@ export function extractConversation(events) {
     entries.push(entry);
   }
 
-  return { entries, stats };
+  return { title, entries, stats };
 }

@@ -1,9 +1,12 @@
 # Backlog
 
-Accepted V0.2 follow-ups (not implemented in V0.1):
+Addressed in the V0.2 readable-export candidate:
 
 - Make transcript previews resilient to unbalanced Markdown fences so later sections do
   not inherit an unintended code block.
 - Disambiguate literal `## Human` and `## Assistant` message content from exporter section
   boundaries.
+
+Still deferred:
+
 - Consider restricting the host export route more tightly to the current session.

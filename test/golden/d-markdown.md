@@ -1,4 +1,8 @@
-## Human
+# DSH Conversation
+
+---
+
+> **Human**
 
 Can you format this for me?
 
@@ -6,7 +10,9 @@ Can you format this for me?
 print('hi')
 ```
 
-## Assistant
+---
+
+> **Assistant**
 
 Sure:
 

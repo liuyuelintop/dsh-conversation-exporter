@@ -12,6 +12,7 @@ import {
   isTrustedExportRequest,
 } from '../src/lib/production.js';
 import { fixture, golden } from './helpers.js';
+import { markdownFilename } from '../src/lib/filename.js';
 
 class CaptureResponse {
   status = undefined;
@@ -58,8 +59,19 @@ test('production snapshot path preserves accepted normal, image-only, and incomp
     const value = snapshot(fixtureName);
     const exported = exportSessionSnapshot(value.session.id, value);
     assert.equal(exported.markdown, golden(goldenName));
-    assert.equal(exported.filename, `dsh-conversation-${value.session.id}.md`);
+    assert.equal(exported.filename, markdownFilename(value.session.id));
+    assert.equal(exported.sessionId, value.session.id);
+    assert.equal(exported.title, null);
+    assert.ok(Array.isArray(exported.entries));
   }
+});
+
+test('production snapshot uses the final provider title for document and filename', () => {
+  const value = snapshot('i-readable-title.jsonl');
+  const exported = exportSessionSnapshot(value.session.id, value);
+  assert.equal(exported.title, 'Project Architecture Guide');
+  assert.equal(exported.filename, 'Project-Architecture-Guide--2002da4d.md');
+  assert.equal(exported.markdown, golden('i-readable-title.md'));
 });
 
 test('production snapshot refuses a mismatched or malformed sessionQuery result', () => {
@@ -87,9 +99,32 @@ test('host route executes sessionQuery.readSession -> extract -> render and retu
   assert.equal(response.headers['Content-Type'], 'text/markdown; charset=utf-8');
   assert.equal(
     response.headers['Content-Disposition'],
-    'attachment; filename="dsh-conversation-session-test-a.md"',
+    `attachment; filename="${markdownFilename('session-test-a')}"; filename*=UTF-8''${markdownFilename('session-test-a')}`,
   );
   assert.equal(response.body, golden('a-normal-chat.md'));
+});
+
+test('host route emits an ASCII fallback and UTF-8 filename for a Chinese title', async () => {
+  const handler = createConversationExportHandler({
+    readSession: async () => {
+      const value = snapshot('i-readable-title.jsonl');
+      value.events.push({
+        type: 'session/title',
+        seq: value.events.length,
+        time: 99,
+        data: { title: '项目架构指南', messageSeqs: [1], source: { kind: 'provider', provider: 'test' } },
+      });
+      return value;
+    },
+  });
+  const response = new CaptureResponse();
+  await handler(request({ body: JSON.stringify({ sessionId: 'session-2002da4d-1111-4222-8333-123456789abc' }) }), response);
+
+  assert.equal(response.status, 200);
+  assert.equal(
+    response.headers['Content-Disposition'],
+    'attachment; filename="dsh-conversation--2002da4d.md"; filename*=UTF-8\'\'%E9%A1%B9%E7%9B%AE%E6%9E%B6%E6%9E%84%E6%8C%87%E5%8D%97--2002da4d.md',
+  );
 });
 
 test('host route enforces method, JSON media type, request shape, and bounded body', async () => {

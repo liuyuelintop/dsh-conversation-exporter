@@ -2,6 +2,8 @@
 
 > **STATUS: V0.1 PRODUCT AND RELEASE ACCEPTED**
 > Accepted implementation: `1c4c63a5823748e07ff87af71a1c16b16e1fa82b`
+>
+> **V0.2 READABLE EXPORT: PRODUCT ACCEPTANCE CANDIDATE**
 
 ## Problem
 
@@ -31,6 +33,14 @@ One button in DSH Web, next to the existing "Session log" export, that downloads
 and nothing else by default (no reasoning, tool calls/results, injections, runtime context,
 paths, token accounting, or streaming noise).
 
+## V0.2 readable-export outcome
+
+The same local-only export now uses the latest valid log-backed DSH session title as the
+document H1 and readable filename stem. Blockquoted role labels and thematic separators
+remain distinct from headings inside messages. A message that ends with an open fenced
+code block receives only the matching closing fence needed to protect later transcript
+sections.
+
 ## Non-goals (V0.1)
 
 - Replacing or reimplementing the official raw Session ZIP export.
@@ -55,12 +65,14 @@ The exporter consumes the same session-log event data the official export ships
 the test/debug CLI via the JSONL artifact. The two stay compatible without sharing code or
 product surface.
 
-## Locked product defaults (Gate A)
+## Product defaults
 
 1. **License:** MIT.
-2. **Filename:** `dsh-conversation-<session-id>.md` (session id sanitized to `[A-Za-z0-9_-]`).
-3. **No provenance header:** clean Markdown starts directly with the first `## Human`
-   section — no session metadata, ids, dates, or paths.
+2. **Filename:** `<sanitized-session-title>--<short-session-id>.md`; safe Unicode such as
+   CJK is retained, and a missing title uses `dsh-conversation--<short-session-id>.md`.
+3. **Document heading:** clean Markdown starts with the latest valid `session/title` as H1,
+   or `DSH Conversation` when no title exists. No ids, dates, paths, or provenance metadata
+   are added to the document.
 4. **Unanswered turns:** the human message renders normally; no Assistant section is
    synthesized. The neutral marker `> Response incomplete.` follows the human message.
 5. **Image-only human messages:** render as a Human section with the neutral placeholder
@@ -71,3 +83,6 @@ product surface.
 V0.1 uses a same-origin host-served Markdown response followed by a browser Blob download.
 This follows DSH's host-streamed Session Log precedent while keeping the clean export as a
 separate additive action and avoiding JSON/RPC encoding overhead for large conversations.
+
+V0.2 does not call an LLM. It folds already-recorded `session/title` events and otherwise
+keeps the V0.1 privacy and extraction boundaries unchanged.

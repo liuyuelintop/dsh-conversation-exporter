@@ -88,12 +88,29 @@ const cases = [
     forbidden: ['img-only-1'],
     stats: { humanTurns: 1, humanMessages: 1, finalAssistants: 1, imageBlocks: 1 },
   },
+  {
+    name: 'I — latest provider title, literal role headings, and Mermaid',
+    fixture: 'i-readable-title.jsonl',
+    golden: 'i-readable-title.md',
+    forbidden: ['First prompt fallback title'],
+    title: 'Project Architecture Guide',
+    stats: { humanTurns: 1, humanMessages: 1, finalAssistants: 1 },
+  },
+  {
+    name: 'J — unterminated fence cannot swallow a later turn',
+    fixture: 'j-unterminated-fence.jsonl',
+    golden: 'j-unterminated-fence.md',
+    forbidden: [],
+    title: 'Markdown Fence Recovery',
+    stats: { turns: 2, humanTurns: 2, humanMessages: 2, finalAssistants: 2 },
+  },
 ];
 
 for (const c of cases) {
   test(`case ${c.name}`, () => {
-    const { markdown, stats } = exportConversation(fixture(c.fixture));
+    const { markdown, stats, title } = exportConversation(fixture(c.fixture));
     assert.equal(markdown, golden(c.golden), `golden mismatch for ${c.fixture}`);
+    assert.equal(title, c.title ?? null, `title for ${c.fixture}`);
     for (const f of c.forbidden) {
       assert.ok(!markdown.includes(f), `forbidden content leaked into export: ${JSON.stringify(f)}`);
     }
@@ -103,10 +120,28 @@ for (const c of cases) {
   });
 }
 
-test('locked download filename convention', () => {
+test('readable download filenames preserve uniqueness and safe Unicode', () => {
+  const sessionId = 'session-2002da4d-1111-4222-8333-123456789abc';
   assert.equal(
-    markdownFilename('session-13040a78-d192-4aec-992c-723f9bae3edc'),
-    'dsh-conversation-session-13040a78-d192-4aec-992c-723f9bae3edc.md',
+    markdownFilename(sessionId, 'Project Architecture Guide'),
+    'Project-Architecture-Guide--2002da4d.md',
   );
-  assert.equal(markdownFilename('a/b c'), 'dsh-conversation-a_b_c.md');
+  assert.equal(markdownFilename(sessionId, '项目架构指南'), '项目架构指南--2002da4d.md');
+  assert.equal(
+    markdownFilename(sessionId, '  Quarterly / plan: *draft? <final>  '),
+    'Quarterly-plan-draft-final--2002da4d.md',
+  );
+  assert.equal(markdownFilename(sessionId), 'dsh-conversation--2002da4d.md');
+  assert.equal(markdownFilename(sessionId, '...'), 'dsh-conversation--2002da4d.md');
+});
+
+test('canonical export data carries session id, nullable title, and entries', () => {
+  const titled = exportConversation(fixture('i-readable-title.jsonl'));
+  assert.equal(titled.sessionId, 'session-2002da4d-1111-4222-8333-123456789abc');
+  assert.equal(titled.title, 'Project Architecture Guide');
+  assert.equal(titled.entries.length, 1);
+
+  const untitled = exportConversation(fixture('a-normal-chat.jsonl'));
+  assert.equal(untitled.title, null);
+  assert.match(untitled.markdown, /^# DSH Conversation\n/);
 });

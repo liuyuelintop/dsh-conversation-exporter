@@ -1,11 +1,21 @@
-## Human
+# DSH Conversation
+
+---
+
+> **Human**
 
 Start a long task.
 
+---
+
 > Response incomplete.
 
-## Human
+---
+
+> **Human**
 
 Another question.
+
+---
 
 > Response incomplete.

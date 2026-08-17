@@ -1,8 +1,14 @@
-## Human
+# DSH Conversation
+
+---
+
+> **Human**
 
 Please write me a README outline.
 
-## Assistant
+---
+
+> **Assistant**
 
 Here is a README outline:
 

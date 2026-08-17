@@ -6,7 +6,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { parseSessionLog, SessionFormatError } from '../src/lib/sessionlog.js';
 import { extractConversation } from '../src/lib/extract.js';
-import { renderConversation } from '../src/lib/render.js';
+import { protectMarkdownFences, renderConversation } from '../src/lib/render.js';
 
 const HEADER = '{"type":"session","version":0,"id":"s1","createdAt":1}\n';
 const TURN_START = '{"type":"turn/start","seq":0,"time":1,"data":{"turn":1}}\n';
@@ -104,5 +104,10 @@ test('a whitespace-only assistant message is not a final response', () => {
   const { entries } = extractConversation(events);
   const markdown = renderConversation(entries);
   assert.ok(markdown.includes('> Response incomplete.'));
-  assert.ok(!markdown.includes('## Assistant'));
+  assert.ok(!markdown.includes('> **Assistant**'));
+});
+
+test('valid longer fences preserve nested backticks byte-for-byte', () => {
+  const markdown = '````md\n```js\nconst value = true;\n```\n````';
+  assert.equal(protectMarkdownFences(markdown), markdown);
 });

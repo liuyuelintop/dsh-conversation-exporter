@@ -2,6 +2,8 @@
 
 > **STATUS: V0.1 PRODUCT AND RELEASE ACCEPTED**
 > Accepted implementation: `1c4c63a5823748e07ff87af71a1c16b16e1fa82b`
+>
+> **V0.2 READABLE EXPORT: PRODUCT ACCEPTANCE CANDIDATE**
 
 ## Core invariant
 
@@ -23,6 +25,8 @@ there is no tolerance for drift. `npm test` runs every case.
 | F | Interrupted turn (aborted, no response) + open turn at EOF (incomplete) | `test/fixtures/f-interrupted.jsonl` | Human messages render normally; NO assistant section is synthesized; the neutral marker `> Response incomplete.` follows each; equals `test/golden/f-interrupted.md` |
 | G | Image block in human message; surface replacement event; unknown log-only events; unknown surface event | `test/fixtures/g-extras.jsonl` | Text-only output equals `test/golden/g-extras.md`; image counted in stats; unknown **surface** event raises `SessionFormatError` (asserted in `test/sessionlog.test.js`) |
 | H | Image-only human turn (image block, no text) | `test/fixtures/h-image-only.jsonl` | A Human section renders with the neutral placeholder `[Image omitted]`; the turn never silently becomes Assistant-only; equals `test/golden/h-image-only.md` |
+| I | Fallback title followed by provider title; literal `## Human` / `## Assistant`; Mermaid | `test/fixtures/i-readable-title.jsonl` | Latest valid provider title is the H1; role headings remain ordinary message content; Mermaid fence is unchanged; equals `test/golden/i-readable-title.md` |
+| J | Sanitized V0.1 unclosed-fence failure followed by another turn; table/code/CJK | `test/fixtures/j-unterminated-fence.jsonl` | One matching closing fence is inserted before the next role boundary; the later turn, table, inline code, and CJK remain intact; equals `test/golden/j-unterminated-fence.md` |
 
 Structural acceptance (always on):
 
@@ -30,10 +34,13 @@ Structural acceptance (always on):
 - Non-contiguous `seq` (including across packed chunk rows) → `SessionFormatError`.
 - Append-origin surface event outside any turn bracket → `SessionFormatError`.
 - Output contains no `usage`, `cwd`, ids, timestamps, or block vocabulary other than text.
-- Download filename follows the locked convention `dsh-conversation-<session-id>.md`
-  (asserted in `test/extract.test.js`).
-- The Markdown has no provenance/session-metadata header (locked default; golden files
-  assert the exact document shape).
+- Canonical export data carries `sessionId`, nullable `title`, and conversation `entries`.
+- English, Chinese, unsafe-character, empty-title, and no-title filenames follow
+  `<sanitized-title>--<short-session-id>.md` with deterministic collision resistance.
+- The Markdown H1 is the final usable `session/title`, or `DSH Conversation` when absent;
+  no other provenance/session metadata is emitted.
+- Balanced backtick/tilde fences, including a longer outer fence around nested backticks,
+  remain byte-for-byte unchanged inside the message.
 
 Production integration acceptance (always on):
 
@@ -48,14 +55,14 @@ Production integration acceptance (always on):
 - Client registers one additive **Export Chat** contribution in
   `conversation.session.header.utilities`; it does not replace or intercept **Session log**.
 - Client posts only the current framework-supplied `sessionId`, creates a Markdown Blob,
-  downloads the locked filename, and revokes the object URL.
+  decodes the server's RFC 5987 UTF-8 filename, downloads it, and revokes the object URL.
 - Production tests re-run the accepted normal, image-only, and incomplete-turn behavior
   against a `readSession`-shaped snapshot.
 
 ## Verification commands
 
 ```bash
-npm test                    # A–H + production + structural cases: node --test test/
+npm test                    # A–J + production + structural cases: node --test test/
 npm run check               # syntax-check every JS file (node --check)
 npm pack --dry-run          # installable artifact contains host, client, and bundle patch
 node src/cli.js test/fixtures/a-normal-chat.jsonl   # smoke: CLI round-trip

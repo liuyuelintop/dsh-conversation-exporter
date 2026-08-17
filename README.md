@@ -49,12 +49,15 @@ npx @deepseek-ai/dsh web
 
 1. Open a conversation in DSH Web.
 2. Select **Export Chat** in the current session header, beside **Session Log**.
-3. Your browser downloads `dsh-conversation-<session-id>.md`.
+3. Your browser downloads `<session-title>--<short-session-id>.md`, for example
+   `Project-Architecture-Guide--2002da4d.md`.
 
-The export preserves message Markdown, omits DSH internals such as reasoning, tool calls
-and results, runtime metadata, paths, and token accounting, and marks an unanswered turn
-with `> Response incomplete.`. Image-only human messages are retained as
-`[Image omitted]`.
+The export starts with the final DSH session title, uses blockquoted **Human** and
+**Assistant** labels, and preserves message Markdown. If one message leaves a fenced code
+block open, the exporter closes that fence before the next transcript section. DSH
+internals such as reasoning, tool calls and results, runtime metadata, paths, and token
+accounting remain omitted. An unanswered turn is marked with `> Response incomplete.`,
+and an image-only human message is retained as `[Image omitted]`.
 
 ## Privacy
 
@@ -63,19 +66,19 @@ runtime and returns the Markdown to the same local Web application. It has no up
 cloud storage, telemetry, or analytics path. The repository contains only hand-written,
 sanitized test conversations.
 
-## V0.1 limitations
+## Limitations
 
 - Exports the current session only, in Markdown only.
 - Keeps human-authored text and the final assistant answer; attachments, images, reasoning,
   tool activity, injected context, subagent logs, and intermediate responses are omitted.
-- Preserves Markdown verbatim. Unbalanced fences can affect the preview of later sections,
-  and literal `## Human` or `## Assistant` text can resemble transcript boundaries.
+- Preserves message Markdown verbatim except for a deterministic closing fence added when
+  a message otherwise ends inside a fenced code block.
 - An image-only human message is represented by `[Image omitted]`; image data is not
   embedded.
 
 ## Compatibility
 
-DSH is developer-preview software and its plugin APIs may change. V0.1 was validated with
+DSH is developer-preview software and its plugin APIs may change. V0.2 was validated with
 `@deepseek-ai/dsh@0.1.0-rc.6`; a later DSH version may require an exporter update.
 
 ## Development

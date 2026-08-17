@@ -1,7 +1,13 @@
-## Human
+# DSH Conversation
+
+---
+
+> **Human**
 
 [Image omitted]
 
-## Assistant
+---
+
+> **Assistant**
 
 I received the diagram.

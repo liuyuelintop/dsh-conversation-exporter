@@ -2,6 +2,8 @@
 
 > **STATUS: V0.1 PRODUCT AND RELEASE ACCEPTED**
 > Accepted implementation: `1c4c63a5823748e07ff87af71a1c16b16e1fa82b`
+>
+> **V0.2 READABLE EXPORT: PRODUCT ACCEPTANCE CANDIDATE**
 
 This document contains findings **verified** against installed/current DSH runtime source,
 the Stage 0 spike, and the isolated V0.1 integration check. Claims without evidence live
@@ -196,6 +198,18 @@ The browser automation backend did not surface a download event for the Blob/anc
 the shipped client artifact's fetch, Blob, filename, click, revoke, and failure paths are
 therefore also covered directly by deterministic integration tests.
 
+### F17 — V0.2 title semantics (verified against published DSH source)
+
+Published `@deepseek-ai/dsh-session-title@0.1.0-rc.6` defines `session/title` as a
+log-only event with `{title, messageSeqs, source}` data. Its `foldSessionTitle(events)`
+uses the last logged `session/title`; the title never enters the model surface or derived
+message history. The service first appends a synchronous `source.kind:'fallback'` title
+from the first eligible human text. The separately published
+`@deepseek-ai/dsh-session-title-first-prompt-llm@0.1.0-rc.6` registers a provider that may
+append a later `source.kind:'provider'` title. `sessionQuery.readSession(id)` returns the
+complete detached event log, so V0.2 mirrors the official last-wins fold over that existing
+snapshot and never invokes an LLM itself.
+
 ## Stage 0 spike architecture — TEST/DEBUG path only
 
 The JSONL artifact and the CLI below are the **test/debug harness**. They
@@ -208,15 +222,15 @@ session.jsonl[.zstd]            (official durable artifact, F7 — debug input)
       │  parseSessionLog        (header gate; chunk-row skip; seq-contiguity check)
       ▼
 raw events (in-order)
-      │  extractConversation    (turn brackets F3; source.kind==='user' F2;
-      ▼                          append-origin only F4; text blocks only F5)
-turns: {human messages, final assistant text | null}
-      │  renderConversation
+      │  extractConversation    (latest valid title F17; turn brackets F3;
+      ▼                          human append-origin text only F2/F4/F5)
+{title | null, entries: human messages + final assistant text | null}
+      │  renderConversation     (H1 + protected role sections)
       ▼
-Markdown (## Human / ## Assistant, verbatim text)
+Markdown (# title, > **Human** / > **Assistant**, message text)
       │  CLI write-to-file      (or browser Blob → anchor download, F10)
       ▼
-dsh-conversation-<session-id>.md   (locked filename)
+<sanitized-title>--<short-session-id>.md
 ```
 
 Deterministic rules (documented here and enforced by tests):
@@ -233,7 +247,12 @@ Deterministic rules (documented here and enforced by tests):
    neutral placeholder `[Image omitted]` — a human turn never silently becomes
    Assistant-only.
 4. `cwd`, paths, `usage`, ids, and header metadata never reach the output by construction;
-   the Markdown has no provenance/session-metadata header (locked default).
+   the Markdown title is the only new session-derived document metadata.
+5. The latest usable `session/title` wins. No title produces the neutral H1
+   `DSH Conversation` and filename stem `dsh-conversation`.
+6. Each role label is a blockquoted bold marker separated by a thematic rule. Before a
+   later section is appended, a still-open backtick or tilde fence in the current message
+   is closed with the same fence character and length; balanced Markdown is unchanged.
 
 ## V0.1 production architecture
 
@@ -245,12 +264,12 @@ Host trust boundary (DSH Host/Origin rules + bounded request body)
       │  sessionQuery.readSession(sessionId)
       ▼
 detached validated SessionLogSnapshot.events
-      │  extractConversation → renderConversation
+      │  extract title + conversation → render protected Markdown
       ▼
 text/markdown response (no-store, nosniff)
-      │  Blob → object URL → hidden anchor click → revoke
+      │  RFC 5987 UTF-8 filename → Blob → hidden anchor click → revoke
       ▼
-dsh-conversation-<sanitized-session-id>.md
+<sanitized-title>--<short-session-id>.md
 ```
 
 The host performs all conversation processing locally. The browser receives only the
@@ -260,4 +279,5 @@ and its **Session log** action are not replaced, patched, or intercepted.
 
 ## Open questions
 
-1. Markdown flavor pinning (raw text is pass-through; no sanitization beyond block filter).
+1. Markdown flavor pinning (message text remains pass-through except for end-of-message
+   fence closure).

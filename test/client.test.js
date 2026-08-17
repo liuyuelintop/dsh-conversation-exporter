@@ -83,9 +83,12 @@ test('client module mounts one additive Export Chat utility and downloads the cu
   const requests = [];
   const client = loadClient(async (url, options) => {
     requests.push({ url: String(url), options });
-    return new Response('## Human\n\nHello\n', {
+    return new Response('# 项目架构指南\n\n---\n\n> **Human**\n\nHello\n', {
       status: 200,
-      headers: { 'Content-Type': 'text/markdown; charset=utf-8' },
+      headers: {
+        'Content-Disposition': "attachment; filename=\"dsh-conversation--2002da4d.md\"; filename*=UTF-8''%E9%A1%B9%E7%9B%AE%E6%9E%B6%E6%9E%84%E6%8C%87%E5%8D%97--2002da4d.md",
+        'Content-Type': 'text/markdown; charset=utf-8',
+      },
     });
   });
 
@@ -125,10 +128,10 @@ test('client module mounts one additive Export Chat utility and downloads the cu
   assert.equal(requests[0].options.headers['Content-Type'], 'application/json');
   assert.equal(requests[0].options.body, JSON.stringify({ sessionId: 'session/a b' }));
   assert.equal(client.anchors.length, 1);
-  assert.equal(client.anchors[0].download, 'dsh-conversation-session_a_b.md');
+  assert.equal(client.anchors[0].download, '项目架构指南--2002da4d.md');
   assert.equal(client.anchors[0].clickCalled, true);
   assert.equal(client.anchors[0].removed, true);
-  assert.equal(await client.objectUrlBlob().text(), '## Human\n\nHello\n');
+  assert.equal(await client.objectUrlBlob().text(), '# 项目架构指南\n\n---\n\n> **Human**\n\nHello\n');
   assert.deepEqual(client.revoked, ['blob:test-export']);
   assert.deepEqual(client.stateWrites[0], ['downloading', 'idle']);
   assert.deepEqual(client.stateWrites[1], [null]);

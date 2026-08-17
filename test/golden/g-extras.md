@@ -1,15 +1,25 @@
-## Human
+# DSH Conversation
+
+---
+
+> **Human**
 
 Look at this diagram.
 
-## Assistant
+---
+
+> **Assistant**
 
 I can see the diagram now.
 
-## Human
+---
+
+> **Human**
 
 Second question.
 
-## Assistant
+---
+
+> **Assistant**
 
 Second answer.

@@ -116,11 +116,21 @@ function writeText(response, status, text, extraHeaders = {}) {
   response.end(text);
 }
 
+function encodedFilename(filename) {
+  return encodeURIComponent(filename).replace(/['()*]/g, (character) =>
+    `%${character.charCodeAt(0).toString(16).toUpperCase()}`);
+}
+
+function contentDisposition(filename, sessionId) {
+  const fallback = /^[\x20-\x7E]+$/.test(filename) ? filename : markdownFilename(sessionId);
+  return `attachment; filename="${fallback}"; filename*=UTF-8''${encodedFilename(filename)}`;
+}
+
 /**
  * Run the production core against one detached `readSession` snapshot.
  * @param {string} requestedSessionId
  * @param {{session: object, events: object[]}} snapshot
- * @returns {{filename: string, markdown: string, stats: object}}
+ * @returns {{sessionId: string, title: string|null, entries: object[], filename: string, markdown: string, stats: object}}
  */
 export function exportSessionSnapshot(requestedSessionId, snapshot) {
   if (snapshot === null || typeof snapshot !== 'object' || Array.isArray(snapshot)) {
@@ -135,10 +145,13 @@ export function exportSessionSnapshot(requestedSessionId, snapshot) {
   if (!Array.isArray(snapshot.events)) {
     throw new TypeError('sessionQuery.readSession returned no event array');
   }
-  const { entries, stats } = extractConversation(snapshot.events);
+  const { title, entries, stats } = extractConversation(snapshot.events);
   return {
-    filename: markdownFilename(requestedSessionId),
-    markdown: renderConversation(entries),
+    sessionId: requestedSessionId,
+    title,
+    entries,
+    filename: markdownFilename(requestedSessionId, title),
+    markdown: renderConversation(entries, title),
     stats,
   };
 }
@@ -174,7 +187,7 @@ export function createConversationExportHandler({ readSession, trustedHosts = []
       const exported = exportSessionSnapshot(sessionId, snapshot);
       response.writeHead(200, {
         'Cache-Control': 'no-store',
-        'Content-Disposition': `attachment; filename="${exported.filename}"`,
+        'Content-Disposition': contentDisposition(exported.filename, sessionId),
         'Content-Type': 'text/markdown; charset=utf-8',
         'X-Content-Type-Options': 'nosniff',
       });
