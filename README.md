@@ -72,6 +72,14 @@ DSH is developer-preview software and its plugin APIs may change. V0.1 was valid
 
 Requires Node.js 20 or newer.
 
+To install the plugin from a local checkout for contributor or development testing:
+
+```bash
+npx @deepseek-ai/dsh plugin --profile web add .
+```
+
+Run the project verification locally:
+
 ```bash
 npm run verify
 ```

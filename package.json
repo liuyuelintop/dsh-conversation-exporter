@@ -4,6 +4,14 @@
   "type": "module",
   "license": "MIT",
   "description": "Local clean-Markdown export for the current DeepSeek Harness Web conversation.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/liuyuelintop/dsh-conversation-exporter.git"
+  },
+  "homepage": "https://github.com/liuyuelintop/dsh-conversation-exporter#readme",
+  "bugs": {
+    "url": "https://github.com/liuyuelintop/dsh-conversation-exporter/issues"
+  },
   "keywords": [
     "dsh",
     "dsh-plugin",

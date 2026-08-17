@@ -1,4 +1,4 @@
-# Draft release notes
+# Release notes
 
 ## DSH Conversation Exporter 0.1.0
 
@@ -29,5 +29,3 @@ This release was validated with `@deepseek-ai/dsh@0.1.0-rc.6`. DSH remains devel
 software, so later DSH releases may require compatibility updates. V0.1 exports only the
 current session as Markdown and omits attachments and image data. See `README.md` for the
 full limitation list.
-
-These notes are prepared for a later release and have not been published.
