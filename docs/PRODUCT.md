@@ -1,9 +1,9 @@
 # Product — DSH Conversation Exporter
 
-> **STATUS: V0.1 PRODUCT AND RELEASE ACCEPTED**
-> Accepted implementation: `1c4c63a5823748e07ff87af71a1c16b16e1fa82b`
+> **STATUS: V0.2 READABLE EXPORT PRODUCT ACCEPTED**
+> Accepted V0.2 implementation: `57571d00448f8a2bb387aa9cd3029283328eb36c`
 >
-> **V0.2 READABLE EXPORT: PRODUCT ACCEPTANCE CANDIDATE**
+> V0.1 product and release accepted at `1c4c63a5823748e07ff87af71a1c16b16e1fa82b`.
 
 ## Problem
 

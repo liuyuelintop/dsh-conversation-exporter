@@ -52,9 +52,10 @@ npx @deepseek-ai/dsh web
 3. Your browser downloads `<session-title>--<short-session-id>.md`, for example
    `Project-Architecture-Guide--2002da4d.md`.
 
-The export starts with the final DSH session title, uses blockquoted **Human** and
-**Assistant** labels, and preserves message Markdown. If one message leaves a fenced code
-block open, the exporter closes that fence before the next transcript section. DSH
+The export starts with the final DSH session title as a Markdown H1, uses blockquoted
+**Human** and **Assistant** labels, and preserves message Markdown. If one message leaves
+a fenced code block open, the exporter closes that fence before the next transcript
+section. DSH
 internals such as reasoning, tool calls and results, runtime metadata, paths, and token
 accounting remain omitted. An unanswered turn is marked with `> Response incomplete.`,
 and an image-only human message is retained as `[Image omitted]`.

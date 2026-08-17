@@ -1,9 +1,11 @@
 # Acceptance — DSH Conversation Exporter
 
-> **STATUS: V0.1 PRODUCT AND RELEASE ACCEPTED**
-> Accepted implementation: `1c4c63a5823748e07ff87af71a1c16b16e1fa82b`
+> **STATUS: V0.2 READABLE EXPORT PRODUCT ACCEPTED**
+> Accepted V0.2 implementation: `57571d00448f8a2bb387aa9cd3029283328eb36c`
 >
-> **V0.2 READABLE EXPORT: PRODUCT ACCEPTANCE CANDIDATE**
+> Human product acceptance covered real DSH sessions, readable title/filename behavior,
+> transcript boundaries, malformed-fence protection, and Markdown/table/code/CJK export.
+> V0.1 product and release accepted at `1c4c63a5823748e07ff87af71a1c16b16e1fa82b`.
 
 ## Core invariant
 
@@ -77,6 +79,14 @@ DSH_HOME="$DSH_V01_HOME" dsh web
 ```
 
 ## Exact-SHA acceptance
+
+V0.2 product acceptance applies to implementation commit
+`57571d00448f8a2bb387aa9cd3029283328eb36c`. It passed deterministic acceptance and real
+DSH manual testing of the readable heading and filename, distinct transcript boundaries,
+unterminated-fence protection, and Markdown/table/code/CJK content. A later commit that
+changes only documentation and release metadata may prepare that implementation for
+publication, but any later code, fixture, or golden change invalidates acceptance and
+requires the full suite and human product checks to be repeated.
 
 V0.1 product and release acceptance applies to implementation commit
 `1c4c63a5823748e07ff87af71a1c16b16e1fa82b`. It passed automated acceptance, real DSH

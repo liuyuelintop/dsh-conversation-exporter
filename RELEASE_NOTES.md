@@ -1,5 +1,35 @@
 # Release notes
 
+## DSH Conversation Exporter 0.2.0
+
+This release makes clean Markdown exports easier to identify and read while preserving
+the V0.1 extraction, privacy, and security boundaries.
+
+### Highlights
+
+- Uses the final DSH session title as the document's Markdown H1.
+- Downloads a readable `<session-title>--<short-session-id>.md` filename, with safe
+  Unicode such as CJK retained and a deterministic fallback when no title is available.
+- Separates Human and Assistant transcript sections with unambiguous blockquoted role
+  labels and thematic boundaries, so message headings remain ordinary message content.
+- Closes a malformed unterminated backtick or tilde fence at the end of its message so it
+  cannot swallow later turns; already-balanced Markdown remains unchanged.
+
+### Install
+
+```bash
+npx @deepseek-ai/dsh plugin --profile web add dsh-conversation-exporter
+```
+
+Restart DSH Web after installation, then select **Export Chat** in the session header.
+
+### Compatibility and limitations
+
+V0.2 was validated with `@deepseek-ai/dsh@0.1.0-rc.6`. It still exports only the current
+session as Markdown, omits attachments and image data, and performs all export processing
+locally without upload, telemetry, analytics, or cloud storage. See `README.md` for the
+full limitation list.
+
 ## DSH Conversation Exporter 0.1.0
 
 The first public release adds **Export Chat** beside DSH Web's official **Session Log**

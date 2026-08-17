@@ -1,6 +1,6 @@
 # Backlog
 
-Addressed in the V0.2 readable-export candidate:
+Completed in V0.2.0:
 
 - Make transcript previews resilient to unbalanced Markdown fences so later sections do
   not inherit an unintended code block.
