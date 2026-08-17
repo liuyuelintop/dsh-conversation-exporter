@@ -1,6 +1,7 @@
 # Product — DSH Conversation Exporter
 
-> **STATUS: GATE A BASELINE ACCEPTED; V0.1 CANDIDATE AWAITING ACCEPTANCE**
+> **STATUS: V0.1 PRODUCT AND RELEASE ACCEPTED**
+> Accepted implementation: `1c4c63a5823748e07ff87af71a1c16b16e1fa82b`
 
 ## Problem
 

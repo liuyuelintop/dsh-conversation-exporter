@@ -1,6 +1,7 @@
 # Acceptance — DSH Conversation Exporter
 
-> **STATUS: V0.1 CANDIDATE AWAITING EXACT-SHA ACCEPTANCE**
+> **STATUS: V0.1 PRODUCT AND RELEASE ACCEPTED**
+> Accepted implementation: `1c4c63a5823748e07ff87af71a1c16b16e1fa82b`
 
 ## Core invariant
 
@@ -70,7 +71,9 @@ DSH_HOME="$DSH_V01_HOME" dsh web
 
 ## Exact-SHA acceptance
 
-Acceptance applies to one exact Git commit SHA. Any code, fixture, or golden change after
-acceptance invalidates it; the full verification suite must be re-run and the new SHA
-recorded. A failing test may never be weakened or deleted to obtain PASS (see
-`docs/AI_OPERATING_CONTRACT.md`).
+V0.1 product and release acceptance applies to implementation commit
+`1c4c63a5823748e07ff87af71a1c16b16e1fa82b`. It passed automated acceptance, real DSH
+manual smoke testing, and independent release review (`V0_1_RELEASE_ACCEPTED`). Any later
+code, fixture, or golden change invalidates that acceptance; the full verification suite
+must be re-run and the new SHA recorded. A failing test may never be weakened or deleted
+to obtain PASS (see `docs/AI_OPERATING_CONTRACT.md`).

@@ -1,85 +1,81 @@
 # DSH Conversation Exporter
 
-> **STATUS: V0.1 IMPLEMENTATION CANDIDATE — AWAITING EXACT-SHA ACCEPTANCE**
+DSH Conversation Exporter adds an **Export Chat** action to DeepSeek Harness (DSH)
+Web. It downloads the current conversation as a clean Markdown file containing the
+human-authored messages and final assistant answers, ready for reading, notes, Git, or
+handoff to another AI assistant.
 
-Export the current [DeepSeek Harness Web](http://127.0.0.1:3080) conversation into a clean,
-human-readable Markdown file — for reading, storing in Git/notes, and attaching to
-ChatGPT / Codex / Claude.
+## Export Chat vs. Session Log
 
-This project **does not replace** DSH's official raw Session ZIP export
-(lossless/raw/debug/replay). This project is the clean/human-readable/AI-handoff layer.
+**Export Chat** is an additive action; it does not replace or modify DSH's official
+**Session Log** export.
 
-## What exists now
+| | Export Chat | Official Session Log |
+|---|---|---|
+| Purpose | Reading and AI handoff | Debugging, recovery, and replay |
+| Contents | Human messages and final assistant answers | Raw events, chunks, tool activity, metadata, and attachments |
+| Format | One Markdown file | ZIP of JSONL artifacts and media |
 
-A dependency-free DSH Web plugin with the production path:
+Use **Export Chat** when you want the conversation. Use **Session Log** when you need a
+lossless record of how DSH produced it.
 
-```
-current Session header action
-  → sessionQuery.readSession(sessionId)
-  → extract human messages + final assistant responses
-  → render clean Markdown
-  → same-origin response
-  → browser Blob download
-```
+## Install and activate
 
-- `src/plugin.js` — native DSH host route over `sessionQuery` and `webServer`.
-- `lib/client.js` — native additive `conversation.session.header.utilities` action.
-- `src/lib/` — accepted extraction/rendering core and production boundary.
-- `test/` — sanitized golden cases plus deterministic host/client integration tests.
-- `src/cli.js` — JSONL test/debug entry point only.
-
-The official **Session log** ZIP export stays present and unchanged. This plugin adds
-**Export Chat** beside it for the current session only.
-
-## Locked product defaults
-
-- License: **MIT** (`LICENSE`)
-- Download filename: `dsh-conversation-<session-id>.md`
-- No provenance/session-metadata header in the Markdown
-- Unanswered turns: neutral marker `> Response incomplete.` (no synthesized Assistant section)
-- Image-only human messages: `[Image omitted]` placeholder
-
-## Install into DSH Web
-
-From this checkout:
+For DSH installations run through `npx @deepseek-ai/dsh`, add the plugin to the `web`
+profile:
 
 ```bash
-dsh plugin --profile web add .
-dsh web
+npx @deepseek-ai/dsh plugin --profile web add dsh-conversation-exporter
 ```
 
-Open a conversation and click **Export Chat**. The browser downloads
-`dsh-conversation-<session-id>.md`.
-
-## Verify and debug
+Adding the package to the `web` profile activates its host and browser components. If DSH
+Web is already running, stop it and restart it so the profile is recomposed:
 
 ```bash
-npm run verify           # tests, syntax checks, package dry-run
-node src/cli.js test/fixtures/a-normal-chat.jsonl
+npx @deepseek-ai/dsh web
 ```
 
-With an official DSH session artifact (including `.jsonl.zstd`, if the `zstd` CLI is on PATH):
+## Use
 
-```bash
-node src/cli.js /path/to/session.jsonl.zstd conversation.md
-```
+1. Open a conversation in DSH Web.
+2. Select **Export Chat** in the current session header, beside **Session Log**.
+3. Your browser downloads `dsh-conversation-<session-id>.md`.
 
-## Repository map
-
-| Path | Purpose |
-|---|---|
-| `docs/PRODUCT.md` | Problem, target user, V0.1 outcome, non-goals |
-| `docs/ARCHITECTURE.md` | Verified DSH runtime findings + production design |
-| `docs/ACCEPTANCE.md` | Machine-testable acceptance criteria |
-| `docs/AI_OPERATING_CONTRACT.md` | Autonomy limits for AI workers |
-| `src/`, `lib/client.js` | Production plugin, accepted core, and debug CLI |
-| `test/fixtures/`, `test/golden/` | Sanitized fixtures and exact expected outputs |
+The export preserves message Markdown, omits DSH internals such as reasoning, tool calls
+and results, runtime metadata, paths, and token accounting, and marks an unanswered turn
+with `> Response incomplete.`. Image-only human messages are retained as
+`[Image omitted]`.
 
 ## Privacy
 
-Everything runs locally. The pipeline never uploads anything, and the repository never
-commits real conversation data — only hand-written, sanitized fixtures.
+Exporting is local-only. The plugin reads the selected DSH session through the local DSH
+runtime and returns the Markdown to the same local Web application. It has no upload,
+cloud storage, telemetry, or analytics path. The repository contains only hand-written,
+sanitized test conversations.
 
-## License
+## V0.1 limitations
 
-MIT (locked default — see `LICENSE`).
+- Exports the current session only, in Markdown only.
+- Keeps human-authored text and the final assistant answer; attachments, images, reasoning,
+  tool activity, injected context, subagent logs, and intermediate responses are omitted.
+- Preserves Markdown verbatim. Unbalanced fences can affect the preview of later sections,
+  and literal `## Human` or `## Assistant` text can resemble transcript boundaries.
+- An image-only human message is represented by `[Image omitted]`; image data is not
+  embedded.
+
+## Compatibility
+
+DSH is developer-preview software and its plugin APIs may change. V0.1 was validated with
+`@deepseek-ai/dsh@0.1.0-rc.6`; a later DSH version may require an exporter update.
+
+## Development
+
+Requires Node.js 20 or newer.
+
+```bash
+npm run verify
+```
+
+This runs the complete test suite, JavaScript syntax checks, and an npm package dry-run.
+
+Licensed under the [MIT License](LICENSE).

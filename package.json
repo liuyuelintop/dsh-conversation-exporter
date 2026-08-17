@@ -1,10 +1,21 @@
 {
   "name": "dsh-conversation-exporter",
   "version": "0.1.0",
-  "private": true,
   "type": "module",
   "license": "MIT",
   "description": "Local clean-Markdown export for the current DeepSeek Harness Web conversation.",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "deepseek",
+    "conversation-export",
+    "conversation-exporter",
+    "markdown"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "src/index.js",
   "exports": {
     ".": "./src/index.js",
