@@ -1,6 +1,8 @@
 # Product — DSH Conversation Exporter
 
-> **STATUS: V0.2 READABLE EXPORT PRODUCT ACCEPTED**
+> **STATUS: V0.3 SELECTIVE TURN EXPORT REVIEW CANDIDATE**
+> V0.3 baseline: released V0.2 `6487ce6af8d26687a43b7ba98a92af9fc5325122`.
+>
 > Accepted V0.2 implementation: `57571d00448f8a2bb387aa9cd3029283328eb36c`
 >
 > V0.1 product and release accepted at `1c4c63a5823748e07ff87af71a1c16b16e1fa82b`.
@@ -41,13 +43,26 @@ remain distinct from headings inside messages. A message that ends with an open 
 code block receives only the matching closing fence needed to protect later transcript
 sections.
 
-## Non-goals (V0.1)
+## V0.3 selective-turn outcome
+
+The existing one-click **Export Chat** action continues to export the whole current
+conversation without opening another UI. An adjacent **Select turns…** action opens a
+small chronological selector with one checkbox per conversation turn, all selected by
+default. The user can select all, clear the selection, and export any non-empty subset.
+
+A selectable turn is the existing canonical unit: all human-authored messages in one DSH
+turn plus that turn's final visible Assistant response, or its existing incomplete marker.
+Human and Assistant bubbles cannot be selected independently.
+
+## Non-goals (V0.3)
 
 - Replacing or reimplementing the official raw Session ZIP export.
 - Forensic/debug/replay fidelity.
 - Exporting reasoning chains, tool activity, subagent logs, or attachments.
+- Selecting Human-only or Assistant-only bubbles.
 - Merging multiple sessions or exporting a whole workspace.
 - PDF/HTML/JSON output formats.
+- AI summarization.
 - Any cloud service, upload, telemetry, or analytics.
 - A browser-independent desktop app.
 
@@ -77,6 +92,9 @@ product surface.
    synthesized. The neutral marker `> Response incomplete.` follows the human message.
 5. **Image-only human messages:** render as a Human section with the neutral placeholder
    `[Image omitted]` — a human turn never silently becomes Assistant-only.
+6. **Selective export:** all canonical turns start selected; export is disabled for zero
+   selections; the host restores chronological order regardless of selection request
+   ordering.
 
 ## V0.1 implementation decision
 
@@ -86,3 +104,9 @@ separate additive action and avoiding JSON/RPC encoding overhead for large conve
 
 V0.2 does not call an LLM. It folds already-recorded `session/title` events and otherwise
 keeps the V0.1 privacy and extraction boundaries unchanged.
+
+V0.3 adds a same-origin host response containing only bounded previews of the already
+privacy-filtered canonical turns. The browser receives opaque chronological indexes and
+short Human/Assistant previews, never raw events, DSH turn ids, reasoning, tools,
+injections, runtime metadata, or full session logs. Selected indexes are validated and
+filtered on the host before the unchanged Markdown renderer runs.

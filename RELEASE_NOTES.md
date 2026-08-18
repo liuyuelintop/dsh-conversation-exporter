@@ -1,5 +1,40 @@
 # Release notes
 
+## DSH Conversation Exporter 0.3.0
+
+This release adds optional whole-turn selection while keeping the existing one-click
+full-conversation export unchanged.
+
+### Highlights
+
+- Adds **Select turns…** beside **Export Chat**, with a chronological scrollable list and
+  one checkbox per Human-plus-final-Assistant turn.
+- Starts with all turns selected, includes **Select all** and **Clear**, and disables
+  selected export when nothing is selected.
+- Restores selected turns to original chronological order and reuses the accepted title,
+  filename, Markdown, fence-protection, incomplete, and image-only behavior.
+- Keeps filtering host-side. The selector receives only bounded canonical previews and
+  opaque indexes; raw session events, reasoning, tools, injections, and runtime metadata
+  remain unavailable to the browser.
+- Uses compact selections for long conversations without enlarging the existing 4 KiB
+  request boundary.
+
+### Install
+
+```bash
+npx @deepseek-ai/dsh plugin --profile web add dsh-conversation-exporter
+```
+
+Restart DSH Web after installation. Use **Export Chat** for the complete current
+conversation or **Select turns…** for a non-empty subset of whole turns.
+
+### Compatibility and limitations
+
+V0.3 targets `@deepseek-ai/dsh@0.1.0-rc.6`. It exports the current session as Markdown
+only and does not support independent Human/Assistant bubble selection. Attachments,
+image data, reasoning, tool activity, injected context, subagent logs, intermediate
+responses, telemetry, cloud storage, and the official Session Log remain out of scope.
+
 ## DSH Conversation Exporter 0.2.0
 
 This release makes clean Markdown exports easier to identify and read while preserving

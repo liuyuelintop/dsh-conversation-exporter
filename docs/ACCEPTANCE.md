@@ -1,6 +1,8 @@
 # Acceptance — DSH Conversation Exporter
 
-> **STATUS: V0.2 READABLE EXPORT PRODUCT ACCEPTED**
+> **STATUS: V0.3 SELECTIVE TURN EXPORT REVIEW CANDIDATE**
+> V0.3 baseline: released V0.2 `6487ce6af8d26687a43b7ba98a92af9fc5325122`.
+>
 > Accepted V0.2 implementation: `57571d00448f8a2bb387aa9cd3029283328eb36c`
 >
 > Human product acceptance covered real DSH sessions, readable title/filename behavior,
@@ -30,6 +32,28 @@ there is no tolerance for drift. `npm test` runs every case.
 | I | Fallback title followed by provider title; literal `## Human` / `## Assistant`; Mermaid | `test/fixtures/i-readable-title.jsonl` | Latest valid provider title is the H1; role headings remain ordinary message content; Mermaid fence is unchanged; equals `test/golden/i-readable-title.md` |
 | J | Sanitized V0.1 unclosed-fence failure followed by another turn; table/code/CJK | `test/fixtures/j-unterminated-fence.jsonl` | One matching closing fence is inserted before the next role boundary; the later turn, table, inline code, and CJK remain intact; equals `test/golden/j-unterminated-fence.md` |
 
+V0.3 selective-turn acceptance (always on):
+
+- Omitting `selection` produces the exact accepted full-session Markdown and keeps the
+  existing client request body `{sessionId}` unchanged.
+- Include/exclude selection can export one or multiple canonical turns; request order and
+  duplicates cannot reorder or duplicate output; unselected turns never render.
+- A selection carries the selector's turn count; the host rejects it if a newly appended
+  turn makes the selector stale.
+- The selected path reuses the existing title, readable filename, fence protection, and
+  Markdown renderer, including Mermaid, code, table, CJK, incomplete, and image-only
+  behavior.
+- Zero selected turns is disabled in the client and refused with HTTP 400 by the host.
+- The selector lists chronological turns with one checkbox per whole turn, defaults all
+  turns selected, and provides Select all and Clear. It never offers independent role
+  bubble selection or modifies the normal transcript.
+- Selector responses contain only sequential opaque indexes and 180-character maximum
+  previews derived from canonical Human/final-Assistant text. Tests prove injections,
+  reasoning, tools/results, chunk text, paths, ids, raw logs, and runtime metadata absent.
+- A 5,000-turn all-selected request stays constant-size; a 2,000-turn alternating
+  selection uses a validated compact bitset and stays inside the unchanged 4 KiB request
+  boundary; the selector body is scrollable.
+
 Structural acceptance (always on):
 
 - Header line with `version !== 0` → `SessionFormatError` (no partial output).
@@ -54,12 +78,17 @@ Production integration acceptance (always on):
 - The plugin-owned route mirrors DSH's Host/Origin trust fence, accepts JSON POST only,
   bounds the request body, returns `no-store` Markdown, and does not leak operational
   failure details to the browser.
-- Client registers one additive **Export Chat** contribution in
-  `conversation.session.header.utilities`; it does not replace or intercept **Session log**.
-- Client posts only the current framework-supplied `sessionId`, creates a Markdown Blob,
-  decodes the server's RFC 5987 UTF-8 filename, downloads it, and revokes the object URL.
+- The plugin adds exact `/api/conversation.export` and `/api/conversation.turns` routes
+  only; both share the Host/Origin, JSON, bounded-body, `no-store`, `nosniff`, and generic
+  failure boundary. `/api/session.export` remains untouched.
+- Client registers one additive contribution containing **Export Chat** and
+  **Select turns…** in `conversation.session.header.utilities`; it does not replace or
+  intercept **Session log**.
+- Full export posts only the current framework-supplied `sessionId`; the selective path
+  additionally posts only the validated compact selection model. Both create a Markdown
+  Blob, decode the server's RFC 5987 UTF-8 filename, download it, and revoke the object URL.
 - Production tests re-run the accepted normal, image-only, and incomplete-turn behavior
-  against a `readSession`-shaped snapshot.
+  against a `readSession`-shaped snapshot, plus host/client selection integration.
 
 ## Verification commands
 
@@ -73,12 +102,16 @@ node src/cli.js test/fixtures/a-normal-chat.jsonl   # smoke: CLI round-trip
 Optional isolated live check (privacy-preserving, disposable DSH home):
 
 ```bash
-DSH_V01_HOME="$(mktemp -d)"
-DSH_HOME="$DSH_V01_HOME" dsh plugin --profile web add .
-DSH_HOME="$DSH_V01_HOME" dsh web
+DSH_V03_HOME="$(mktemp -d)"
+DSH_HOME="$DSH_V03_HOME" dsh plugin --profile web add .
+DSH_HOME="$DSH_V03_HOME" dsh web
 ```
 
 ## Exact-SHA acceptance
+
+V0.3 remains a review candidate until human product acceptance binds these criteria to
+the exact candidate commit. Any code, fixture, golden, or client artifact change after
+that acceptance requires the full suite and manual product checks to be repeated.
 
 V0.2 product acceptance applies to implementation commit
 `57571d00448f8a2bb387aa9cd3029283328eb36c`. It passed deterministic acceptance and real

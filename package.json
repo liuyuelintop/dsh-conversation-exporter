@@ -1,9 +1,9 @@
 {
   "name": "dsh-conversation-exporter",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
   "license": "MIT",
-  "description": "Local clean-Markdown export for the current DeepSeek Harness Web conversation.",
+  "description": "Local clean-Markdown full or selective-turn export for the current DeepSeek Harness Web conversation.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/liuyuelintop/dsh-conversation-exporter.git"

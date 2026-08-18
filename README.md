@@ -3,7 +3,8 @@
 DSH Conversation Exporter adds an **Export Chat** action to DeepSeek Harness (DSH)
 Web. It downloads the current conversation as a clean Markdown file containing the
 human-authored messages and final assistant answers, ready for reading, notes, Git, or
-handoff to another AI assistant.
+handoff to another AI assistant. **Select turns…** optionally exports only chosen whole
+conversation turns while preserving the one-click full export.
 
 ## Demo
 
@@ -48,8 +49,12 @@ npx @deepseek-ai/dsh web
 ## Use
 
 1. Open a conversation in DSH Web.
-2. Select **Export Chat** in the current session header, beside **Session Log**.
-3. Your browser downloads `<session-title>--<short-session-id>.md`, for example
+2. Select **Export Chat** for the whole conversation, or **Select turns…** to choose whole
+   Human-plus-final-Assistant turns from a chronological list.
+3. If using the selector, all turns start selected. Use **Select all** or **Clear** as
+   needed, then choose **Export selected turns**. Export remains disabled when none are
+   selected.
+4. Your browser downloads `<session-title>--<short-session-id>.md`, for example
    `Project-Architecture-Guide--2002da4d.md`.
 
 The export starts with the final DSH session title as a Markdown H1, uses blockquoted
@@ -65,11 +70,15 @@ and an image-only human message is retained as `[Image omitted]`.
 Exporting is local-only. The plugin reads the selected DSH session through the local DSH
 runtime and returns the Markdown to the same local Web application. It has no upload,
 cloud storage, telemetry, or analytics path. The repository contains only hand-written,
-sanitized test conversations.
+sanitized test conversations. The selector receives only short previews derived from the
+already-filtered conversation—not raw events, reasoning, tools, injected context, DSH
+turn ids, or runtime metadata.
 
 ## Limitations
 
 - Exports the current session only, in Markdown only.
+- Selects whole conversation turns only; Human and Assistant bubbles cannot be selected
+  independently.
 - Keeps human-authored text and the final assistant answer; attachments, images, reasoning,
   tool activity, injected context, subagent logs, and intermediate responses are omitted.
 - Preserves message Markdown verbatim except for a deterministic closing fence added when
@@ -79,7 +88,7 @@ sanitized test conversations.
 
 ## Compatibility
 
-DSH is developer-preview software and its plugin APIs may change. V0.2 was validated with
+DSH is developer-preview software and its plugin APIs may change. V0.3 targets
 `@deepseek-ai/dsh@0.1.0-rc.6`; a later DSH version may require an exporter update.
 
 ## Development

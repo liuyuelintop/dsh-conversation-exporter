@@ -6,8 +6,10 @@ import assert from 'node:assert/strict';
 import { parseSessionLog } from '../src/lib/sessionlog.js';
 import {
   CONVERSATION_EXPORT_PATH,
+  CONVERSATION_TURNS_PATH,
   MAX_EXPORT_REQUEST_BYTES,
   createConversationExportHandler,
+  createConversationTurnsHandler,
   exportSessionSnapshot,
   isTrustedExportRequest,
 } from '../src/lib/production.js';
@@ -102,6 +104,124 @@ test('host route executes sessionQuery.readSession -> extract -> render and retu
     `attachment; filename="${markdownFilename('session-test-a')}"; filename*=UTF-8''${markdownFilename('session-test-a')}`,
   );
   assert.equal(response.body, golden('a-normal-chat.md'));
+});
+
+test('host export route accepts turn selection and preserves chronological order', async () => {
+  const calls = [];
+  const handler = createConversationExportHandler({
+    readSession: async (sessionId) => {
+      calls.push(sessionId);
+      return snapshot('a-normal-chat.jsonl');
+    },
+  });
+  const response = new CaptureResponse();
+  await handler(request({
+    body: JSON.stringify({ sessionId: 'session-test-a', selection: { include: [1, 0], count: 2 } }),
+  }), response);
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(calls, ['session-test-a']);
+  assert.equal(response.body, golden('a-normal-chat.md'));
+});
+
+test('host export route refuses zero selected turns before returning a download', async () => {
+  const handler = createConversationExportHandler({
+    readSession: async () => snapshot('a-normal-chat.jsonl'),
+  });
+  for (const selection of [{ include: [], count: 2 }, { exclude: [0, 1], count: 2 }]) {
+    const response = new CaptureResponse();
+    await handler(request({
+      body: JSON.stringify({ sessionId: 'session-test-a', selection }),
+    }), response);
+    assert.equal(response.status, 400);
+    assert.equal(response.headers['Content-Type'], 'text/plain; charset=utf-8');
+    assert.equal(response.body, 'select at least one conversation turn');
+    assert.equal(response.headers['Content-Disposition'], undefined);
+  }
+});
+
+test('host export route rejects a stale selector turn count', async () => {
+  const handler = createConversationExportHandler({
+    readSession: async () => snapshot('a-normal-chat.jsonl'),
+  });
+  const response = new CaptureResponse();
+  await handler(request({
+    body: JSON.stringify({
+      sessionId: 'session-test-a',
+      selection: { include: [0], count: 1 },
+    }),
+  }), response);
+  assert.equal(response.status, 400);
+  assert.equal(response.body, 'conversation turns changed; reload the selector');
+  assert.equal(response.headers['Content-Disposition'], undefined);
+});
+
+test('turn-list route returns only privacy-filtered bounded previews', async () => {
+  const calls = [];
+  const handler = createConversationTurnsHandler({
+    readSession: async (sessionId) => {
+      calls.push(sessionId);
+      return snapshot('b-injected.jsonl');
+    },
+  });
+  const response = new CaptureResponse();
+  await handler(request({ body: JSON.stringify({ sessionId: 'session-test-b' }) }), response);
+
+  assert.equal(CONVERSATION_TURNS_PATH, '/api/conversation.turns');
+  assert.equal(response.status, 200);
+  assert.equal(response.headers['Cache-Control'], 'no-store');
+  assert.equal(response.headers['Content-Type'], 'application/json; charset=utf-8');
+  assert.deepEqual(calls, ['session-test-b']);
+  assert.deepEqual(JSON.parse(response.body), {
+    turns: [{
+      index: 0,
+      human: 'Please write me a README outline.',
+      assistant: 'Here is a README outline: - Intro - Usage',
+    }],
+  });
+  for (const forbidden of [
+    'approval policy',
+    'SYSTEM PROMPT',
+    'Available skills',
+    'goal continuation',
+    'CRON',
+    'Backup acknowledged',
+    '/Users/example',
+    'session-test-b',
+  ]) {
+    assert.ok(!response.body.includes(forbidden), `turn-list response leaked ${forbidden}`);
+  }
+});
+
+test('turn-list route shares the export request trust and failure boundary', async () => {
+  let reads = 0;
+  const failures = [];
+  const handler = createConversationTurnsHandler({
+    readSession: async () => {
+      reads++;
+      throw new Error('private path /Users/example/session.jsonl');
+    },
+    onError: (error) => failures.push(error),
+  });
+
+  for (const [incoming, status] of [
+    [request({ method: 'GET' }), 405],
+    [request({ headers: { host: 'attacker.example', 'content-type': 'application/json' } }), 403],
+    [request({ headers: { host: '127.0.0.1:3080', 'content-type': 'text/plain' } }), 415],
+    [request({ body: '{}' }), 400],
+  ]) {
+    const response = new CaptureResponse();
+    await handler(incoming, response);
+    assert.equal(response.status, status);
+  }
+  assert.equal(reads, 0);
+
+  const response = new CaptureResponse();
+  await handler(request(), response);
+  assert.equal(response.status, 500);
+  assert.equal(response.body, 'turn selection failed');
+  assert.ok(!response.body.includes('/Users/example'));
+  assert.equal(failures.length, 1);
 });
 
 test('host route emits an ASCII fallback and UTF-8 filename for a Chinese title', async () => {

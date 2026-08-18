@@ -1,6 +1,8 @@
 # Architecture — DSH Conversation Exporter
 
-> **STATUS: V0.2 READABLE EXPORT PRODUCT ACCEPTED**
+> **STATUS: V0.3 SELECTIVE TURN EXPORT REVIEW CANDIDATE**
+> V0.3 baseline: released V0.2 `6487ce6af8d26687a43b7ba98a92af9fc5325122`.
+>
 > Accepted V0.2 implementation: `57571d00448f8a2bb387aa9cd3029283328eb36c`
 >
 > V0.1 product and release accepted at `1c4c63a5823748e07ff87af71a1c16b16e1fa82b`.
@@ -276,6 +278,50 @@ The host performs all conversation processing locally. The browser receives only
 finished Markdown over the same DSH origin. The JSONL artifact/CLI remain test/debug
 infrastructure and are not used by the production route. The official `/api/session.export`
 and its **Session log** action are not replaced, patched, or intercepted.
+
+## V0.3 selective-turn extension
+
+The V0.1/V0.2 full export request remains unchanged: `{sessionId}` sent to
+`/api/conversation.export` still takes the fast `readSession → extract → render` path and
+returns the full conversation Markdown.
+
+```text
+Select turns… (current sessionId)
+      │  POST /api/conversation.turns
+      ▼
+same Host/Origin + JSON + 4 KiB request boundary
+      │  sessionQuery.readSession(sessionId)
+      ▼
+extractConversation(events) — existing privacy filter
+      │  discard raw turn ids; collapse whitespace; cap previews at 180 characters
+      ▼
+{turns: [{index, human, assistant|null}]} → scrollable one-checkbox-per-turn dialog
+      │  non-empty include/exclude indexes, or compact bitset for large selections
+      ▼
+POST /api/conversation.export {sessionId, selection}
+      │  readSession → extract canonical entries → validate/filter in source order
+      ▼
+existing renderConversation + title + filename + Blob download
+```
+
+The selector response is deliberately not a general conversation API. It contains only
+the minimum UI model derived from canonical export entries: a zero-based opaque index and
+bounded Human/final-Assistant previews. It omits the session id (already held by the
+requesting component), title, unbounded message bodies, DSH turn ids, raw events, reasoning,
+tools, injected context, usage, paths, and runtime metadata.
+
+Selection is an extra host-side stage between canonical extraction and the existing
+renderer. Include indexes are treated as a set and the canonical entry array is always
+walked in source order, so the client cannot reorder or duplicate output. The request's
+turn count binds it to the selector snapshot; if a new turn appears while the dialog is
+open, the host rejects the stale selection and the user reloads it. Exclude form makes the
+default all-selected request constant-size; a validated base64 bitset keeps large
+arbitrary selections inside the unchanged 4 KiB request limit. Both client and host block
+zero selected turns.
+
+Both plugin-owned routes use the same local same-origin trust fence, bounded JSON body,
+`no-store`, and `nosniff` response policy. The extraction, privacy, title, filename,
+Markdown renderer, CLI/debug path, and official Session Log endpoint remain unchanged.
 
 ## Open questions
 
