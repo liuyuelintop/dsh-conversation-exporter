@@ -1,10 +1,10 @@
 # DSH Conversation Exporter
 
-DSH Conversation Exporter adds an **Export Chat** action to DeepSeek Harness (DSH)
-Web. It downloads the current conversation as a clean Markdown file containing the
-human-authored messages and final assistant answers, ready for reading, notes, Git, or
-handoff to another AI assistant. **Select turns…** optionally exports only chosen whole
-conversation turns while preserving the one-click full export.
+DSH Conversation Exporter adds two local export actions to DeepSeek Harness (DSH) Web.
+**Export Chat** downloads the whole current conversation as clean, readable Markdown in
+one click. **Select turns…** exports a chosen subset of whole conversation turns. A turn
+means the Human message or messages plus the corresponding final Assistant response;
+selected turns keep their original chronological order, and unselected turns are omitted.
 
 ## Demo
 
@@ -36,7 +36,7 @@ For DSH installations run through `npx @deepseek-ai/dsh`, add the plugin to the 
 profile:
 
 ```bash
-npx @deepseek-ai/dsh plugin --profile web add dsh-conversation-exporter
+npx @deepseek-ai/dsh plugin --profile web add dsh-conversation-exporter@latest
 ```
 
 Adding the package to the `web` profile activates its host and browser components. If DSH
@@ -49,21 +49,20 @@ npx @deepseek-ai/dsh web
 ## Use
 
 1. Open a conversation in DSH Web.
-2. Select **Export Chat** for the whole conversation, or **Select turns…** to choose whole
-   Human-plus-final-Assistant turns from a chronological list.
+2. Select **Export Chat** to download the whole current conversation immediately, or
+   **Select turns…** to choose whole turns from a chronological list.
 3. If using the selector, all turns start selected. Use **Select all** or **Clear** as
    needed, then choose **Export selected turns**. Export remains disabled when none are
    selected.
 4. Your browser downloads `<session-title>--<short-session-id>.md`, for example
    `Project-Architecture-Guide--2002da4d.md`.
 
-The export starts with the final DSH session title as a Markdown H1, uses blockquoted
-**Human** and **Assistant** labels, and preserves message Markdown. If one message leaves
-a fenced code block open, the exporter closes that fence before the next transcript
-section. DSH
-internals such as reasoning, tool calls and results, runtime metadata, paths, and token
-accounting remain omitted. An unanswered turn is marked with `> Response incomplete.`,
-and an image-only human message is retained as `[Image omitted]`.
+The latest readable DSH session title becomes the Markdown H1 and a safe, readable
+filename stem: `<session-title>--<short-session-id>.md`. The export uses blockquoted
+**Human** and **Assistant** labels and preserves message Markdown. If one message leaves a
+fenced code block open, the exporter closes that fence before the next transcript
+section. An unanswered turn is marked with `> Response incomplete.`, and an image-only
+human message is retained as `[Image omitted]`.
 
 ## Privacy
 
@@ -71,20 +70,20 @@ Exporting is local-only. The plugin reads the selected DSH session through the l
 runtime and returns the Markdown to the same local Web application. It has no upload,
 cloud storage, telemetry, or analytics path. The repository contains only hand-written,
 sanitized test conversations. The selector receives only short previews derived from the
-already-filtered conversation—not raw events, reasoning, tools, injected context, DSH
-turn ids, or runtime metadata.
+already-filtered conversation. The selector and Markdown export exclude reasoning, tool
+calls and results, injected context, runtime metadata, and raw Session Log data.
 
 ## Limitations
 
 - Exports the current session only, in Markdown only.
 - Selects whole conversation turns only; Human and Assistant bubbles cannot be selected
   independently.
-- Keeps human-authored text and the final assistant answer; attachments, images, reasoning,
-  tool activity, injected context, subagent logs, and intermediate responses are omitted.
+- Keeps human-authored text and the final assistant answer; attachments, reasoning, tool
+  activity, injected context, subagent logs, and intermediate responses are omitted.
 - Preserves message Markdown verbatim except for a deterministic closing fence added when
   a message otherwise ends inside a fenced code block.
-- An image-only human message is represented by `[Image omitted]`; image data is not
-  embedded.
+- Images are not embedded; an image-only human message is represented by the
+  `[Image omitted]` placeholder.
 
 ## Compatibility
 
