@@ -1,7 +1,9 @@
 # Acceptance — DSH Conversation Exporter
 
-> **STATUS: V0.3 SELECTIVE TURN EXPORT REVIEW CANDIDATE**
+> **STATUS: V0.3 PRODUCT ACCEPTED — RELEASE PREPARATION**
 > V0.3 baseline: released V0.2 `6487ce6af8d26687a43b7ba98a92af9fc5325122`.
+>
+> Accepted V0.3 implementation: `904a068bec1da3ebf0abec77726617bce5276e45`
 >
 > Accepted V0.2 implementation: `57571d00448f8a2bb387aa9cd3029283328eb36c`
 >
@@ -109,9 +111,15 @@ DSH_HOME="$DSH_V03_HOME" dsh web
 
 ## Exact-SHA acceptance
 
-V0.3 remains a review candidate until human product acceptance binds these criteria to
-the exact candidate commit. Any code, fixture, golden, or client artifact change after
-that acceptance requires the full suite and manual product checks to be repeated.
+V0.3 product acceptance applies to implementation commit
+`904a068bec1da3ebf0abec77726617bce5276e45`. On a separate MacBook with real DSH
+sessions, human acceptance passed the existing full export, the Select turns UI,
+non-adjacent whole-turn selection, chronological selected output with unselected turns
+omitted, the accepted title/filename/Markdown behavior, and confirmation that the
+official Session Log remained unchanged. A later commit that changes only documentation
+and release metadata may prepare that implementation for publication, but any code,
+fixture, golden, or client artifact change invalidates acceptance and requires the full
+suite and manual product checks to be repeated.
 
 V0.2 product acceptance applies to implementation commit
 `57571d00448f8a2bb387aa9cd3029283328eb36c`. It passed deterministic acceptance and real

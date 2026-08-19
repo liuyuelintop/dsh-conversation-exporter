@@ -1,7 +1,9 @@
 # Architecture — DSH Conversation Exporter
 
-> **STATUS: V0.3 SELECTIVE TURN EXPORT REVIEW CANDIDATE**
+> **STATUS: V0.3 PRODUCT ACCEPTED — RELEASE PREPARATION**
 > V0.3 baseline: released V0.2 `6487ce6af8d26687a43b7ba98a92af9fc5325122`.
+>
+> Accepted V0.3 implementation: `904a068bec1da3ebf0abec77726617bce5276e45`
 >
 > Accepted V0.2 implementation: `57571d00448f8a2bb387aa9cd3029283328eb36c`
 >
