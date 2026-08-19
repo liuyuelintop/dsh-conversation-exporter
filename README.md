@@ -16,6 +16,20 @@ selected turns keep their original chronological order, and unselected turns are
 
 ![Exported DSH conversation as Markdown](assets/markdown-export-preview.png)
 
+### V0.3 Selective Turn Export
+
+Choose only the whole conversation turns you want to keep.
+
+![Choose selected conversation turns](assets/select-turns.png)
+
+Selected turns preserve rich Markdown, including Mermaid diagrams.
+
+![Mermaid preserved in selective export](assets/selective-export-mermaid.png)
+
+Unselected turns are omitted while the original chronological order is preserved.
+
+![Selective export result](assets/selective-export-result.png)
+
 ## Export Chat vs. Session Log
 
 **Export Chat** is an additive action; it does not replace or modify DSH's official
