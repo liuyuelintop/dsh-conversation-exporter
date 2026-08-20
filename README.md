@@ -6,7 +6,13 @@ one click. **Select turns…** exports a chosen subset of whole conversation tur
 means the Human message or messages plus the corresponding final Assistant response;
 selected turns keep their original chronological order, and unselected turns are omitted.
 
+Listed in [Awesome DSH Plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin)
+under **Sessions & Messages**.
+
 ## Demo
+
+Use **Export Chat** for the full current conversation, or **Select turns…** to export
+chosen whole turns only.
 
 ### Export directly from DSH Web
 
